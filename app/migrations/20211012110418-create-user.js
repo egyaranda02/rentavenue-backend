@@ -9,22 +9,28 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       email: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        notNull: true
       },
       password: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        notNull: true
       },
       firstName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        notNull: true
       },
       lastName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        notNull: true
       },
       gender: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        notNull: true
       },
       phone_number: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        notNull: true
       },
       profile_picture: {
         type: Sequelize.STRING

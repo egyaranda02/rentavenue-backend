@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const bcrypt = require('bcrypt');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -15,30 +16,55 @@ module.exports = (sequelize, DataTypes) => {
   };
   User.init({
     email: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      allowNull:false,
+      unique: true,
+      validate: {
+        isEmail: true
+      }
     },
     password: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      allowNull:false
     },
     firstName: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      allowNull:false
     },
     lastName: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      allowNull:false
     },
     gender: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      allowNull:false
     },
     phone_number: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      allowNull:false,
+      validate: {
+        isNumeric:true
+      }
     },
     profile_picture: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
+      defaultValue: "profile_pict.jpg"
     },
     is_verified: {
-      type: DataTypes.BOOLEAN
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   }, {
+    hooks:{
+      beforeCreate: async (user, options)=>{
+        const salt = await bcrypt.genSalt();
+        const encryptedPassword = await bcrypt.hash(user.password, salt);
+        user.password = encryptedPassword;
+      },
+      beforeValidate: (user, options)=>{
+        user.email = user.email.toLowerCase();
+      }
+    },
     sequelize,
     modelName: 'User',
   });
