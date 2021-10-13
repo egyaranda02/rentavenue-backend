@@ -8,6 +8,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const smtpTransportModule = require("nodemailer-smtp-transport");
 
+const tokenAge = 60 * 60;
 module.exports.register = async function(req, res){
     const{
         email,
@@ -95,3 +96,48 @@ module.exports.verification = async function(req, res){
         });
     }
 };
+
+module.exports.login = async function(req, res){
+    try{
+        const user = await db.User.findOne({ where: {email: req.body.email} });
+        if(user){
+            if(user.is_verified == false){
+                return res.status(200).json({
+                    errors: {
+                        attribute: "Authentication",
+                        message: "Please activate your email first",
+                    },
+                });
+            }
+            const passwordAuth = bcrypt.compareSync(req.body.password, user.password);
+            if(passwordAuth){
+                const token = await jwt.sign({UserId: user.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
+                res.cookie("jwt", token, { maxAge: 60*60*1000 });
+                res.status(201).json({
+                    success: true,
+                    message: "Login Success",
+                    data: {
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        email: user.email
+                    }
+                });
+            }
+            res.status(200).json({
+                success: false,
+                message: "Email and password didn't match",
+            });
+        }
+        res.status(200).json({
+            errors: {
+                attribute: "Authentication",
+                message: "Email is not registered",
+            },
+        });
+    }catch(error){
+        return res.status(200).json({
+            success: false,
+            errors: error,
+        });
+    }
+}
