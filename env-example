@@ -1,0 +1,10 @@
+POSTGRES_PASSWORD=asdasd
+
+# build, production or development
+ENVIRONMENT=development
+
+BASE_URL=http://test.id
+
+PORT_ADMINER=19090
+PORT_API=19089
+PORT_DATABASE=19433
