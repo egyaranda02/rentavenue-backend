@@ -113,7 +113,7 @@ module.exports.login = async function(req, res){
             if(passwordAuth){
                 const token = await jwt.sign({UserId: user.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
                 res.cookie("jwt", token, { maxAge: 60*60*1000 });
-                res.status(201).json({
+                return res.status(201).json({
                     success: true,
                     message: "Login Success",
                     data: {
@@ -123,7 +123,7 @@ module.exports.login = async function(req, res){
                     }
                 });
             }
-            res.status(200).json({
+            return res.status(200).json({
                 success: false,
                 message: "Email and password didn't match",
             });
@@ -141,3 +141,70 @@ module.exports.login = async function(req, res){
         });
     }
 }
+
+module.exports.editUser = async function(req,res){
+    const{
+        password,
+        firstName,
+        lastName,
+        gender,
+        phone_number
+    } = req.body;
+    const findUser = await db.User.findByPk(req.params.id);
+    // Password required
+    if (password == null) {
+        return res.status(200).json({
+            success: false,
+            messages: "Please enter the password",
+        });
+    }
+    if (!findUser) {
+        return res.status(200).json({
+            success: false,
+            messages: "User not found!",
+        });
+    }
+    const comparePassword = bcrypt.compareSync(password, findUser.password);
+    // If password false
+    if (!comparePassword) {
+        return res.status(200).json({
+            success: false,
+            messages: "Wrong Password!",
+        });
+    }
+    let profile_picture;
+    if(req.file){
+        profile_picture = req.file.filename;
+    }
+    try{
+        findUser.update({
+            firstName: firstName,
+            lastName: lastName,
+            gender: gender,
+            phone_number: phone_number,
+            profile_picture: profile_picture,
+        });
+        return res.status(200).json({
+            success: true,
+            messages: "Profile updated!",
+            data: {
+                firstName: findUser.firstName,
+                lastName: findUser.lastName,
+                email: findUser.email
+            }
+        });
+    }catch(error){
+        return res.status(200).json({
+            success: false,
+            errors: error,
+        });
+    }
+}
+
+module.exports.logout = (req, res) => {
+    res.cookie("jwt", "", { maxAge: 1 });
+    res.status(201).json({
+        success: true,
+        message: "Logout Success",
+    });
+};

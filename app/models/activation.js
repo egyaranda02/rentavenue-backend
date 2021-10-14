@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   Activation.init({
     id_user: DataTypes.INTEGER,
+    id_vendor: DataTypes.INTEGER,
     token: DataTypes.STRING
   }, {
     sequelize,

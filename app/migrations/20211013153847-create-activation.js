@@ -12,6 +12,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         references: {model: 'Users', key:'id'}
       },
+      id_vendor: {
+        type: Sequelize.INTEGER,
+        references: {model: 'Vendors', key:'id'}
+      },
       token: {
         type: Sequelize.STRING
       },
