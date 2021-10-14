@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const bcrypt = require('bcrypt');
 module.exports = (sequelize, DataTypes) => {
   class Vendor extends Model {
     /**
@@ -54,6 +55,16 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false
     }
   }, {
+    hooks:{
+      beforeCreate: async (vendor, options)=>{
+        const salt = await bcrypt.genSalt();
+        const encryptedPassword = await bcrypt.hash(vendor.password, salt);
+        vendor.password = encryptedPassword;
+      },
+      beforeValidate: (vendor, options)=>{
+        vendor.email = vendor.email.toLowerCase();
+      }
+    },
     sequelize,
     modelName: 'Vendor',
   });
