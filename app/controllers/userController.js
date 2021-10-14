@@ -79,7 +79,7 @@ module.exports.verification = async function(req, res){
             const user = await db.User.findByPk(findActivation.id_user);
             await user.update({is_verified: true});
             await db.Activation.destroy({where: {id: findActivation.id}});
-            res.status(201).json({
+            return res.status(201).json({
                 success: true,
                 messages: "Email verification success",
             });
@@ -172,8 +172,12 @@ module.exports.editUser = async function(req,res){
             messages: "Wrong Password!",
         });
     }
+    // See if user changing profile picture
     let profile_picture;
     if(req.file){
+        if(findUser.profile_picture != 'profile_picture.jpg'){
+            fs.unlinkSync(`./assets/user/profile_picture/${findUser.profile_picture}`);
+        }
         profile_picture = req.file.filename;
     }
     try{
