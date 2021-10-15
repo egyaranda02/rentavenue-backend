@@ -27,9 +27,11 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
+
 userRouter.post('/register', userController.register);
 userRouter.patch('/:id', upload.single('profile_picture'), userController.editUser);
 userRouter.get('/verify', userController.verification);
+userRouter.get('/:id', userController.getUserDetail);
 userRouter.post('/login', userController.login);
 userRouter.post('/logout', userController.logout);
 

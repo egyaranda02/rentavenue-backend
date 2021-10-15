@@ -10,6 +10,32 @@ const bcrypt = require("bcrypt");
 const smtpTransportModule = require("nodemailer-smtp-transport");
 
 const tokenAge = 60 * 60;
+
+module.exports.getVendorDetails = async function(req, res){
+    try{
+        const vendor = await db.Vendor.findByPk(req.params.id, {
+            attributes:[
+                'id',
+                'email',
+                'vendor_name',
+                'address',
+                'description',
+                'phone_number',
+                'profile_picture'
+            ]
+        })
+        return res.status(200).json({
+            data: vendor,
+        });
+    }catch(error){
+        return res.status(200).json({
+            success: false,
+            errors: error,
+        });
+    }
+}
+
+
 module.exports.register = async function(req,res){
     const{
         email,
@@ -20,6 +46,14 @@ module.exports.register = async function(req,res){
         description
     } = req.body;
     try{
+        const findEmailUser = await db.User.findOne({where: {email: email}});
+        const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
+        if(findEmailUser || findEmailVendor){
+            return res.status(200).json({
+                success: false,
+                messages: "Email has been used"
+            });
+        }
         const vendor = await db.Vendor.create({
             email,
             password,
@@ -81,6 +115,12 @@ module.exports.verification = async function(req, res){
             const vendor = await db.Vendor.findByPk(findActivation.id_vendor);
             await vendor.update({is_verified: true});
             await db.Activation.destroy({where: {id: findActivation.id}});
+            const VendorId = findActivation.id_vendor;
+            const UserId = null;
+            await db.Wallet.create({
+                VendorId,
+                UserId
+            })
             return res.status(201).json({
                 success: true,
                 messages: "Email verification success",

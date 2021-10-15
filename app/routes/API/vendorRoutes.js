@@ -30,6 +30,7 @@ const upload = multer({
 vendorRouter.post('/register', vendorController.register);
 vendorRouter.patch('/:id', upload.single('profile_picture'), vendorController.editVendor);
 vendorRouter.get('/verify', vendorController.verification);
+vendorRouter.get('/:id', vendorController.getVendorDetails);
 vendorRouter.post('/login', vendorController.login);
 vendorRouter.post('/logout', vendorController.logout);
 
