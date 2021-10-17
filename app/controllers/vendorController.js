@@ -215,7 +215,7 @@ module.exports.editVendor = async function(req, res){
     // See if user changing profile picture
     let profile_picture;
     if(req.file){
-        if(findVendor.profile_picture != 'profile_picture.jpg'){
+        if(findVendor.profile_picture != 'profile_pict.jpg'){
             fs.unlinkSync(`./assets/vendor/profile_picture/${findVendor.profile_picture}`);
         }
         profile_picture = req.file.filename;

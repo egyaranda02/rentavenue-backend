@@ -1,6 +1,7 @@
 require("dotenv").config({ path: "./.env" });
 const db = require("../models/index.js");
 const uuid = require("uuid");
+const fs = require('fs');
 const nodemailer = require("nodemailer");
 const { use } = require("../routes/index.js");
 const { Op } = require("sequelize");
@@ -214,7 +215,7 @@ module.exports.editUser = async function(req,res){
     // See if user changing profile picture
     let profile_picture;
     if(req.file){
-        if(findUser.profile_picture != 'profile_picture.jpg'){
+        if(findUser.profile_picture !== 'profile_pict.jpg'){
             fs.unlinkSync(`./assets/user/profile_picture/${findUser.profile_picture}`);
         }
         profile_picture = req.file.filename;
