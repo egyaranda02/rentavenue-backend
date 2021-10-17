@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Venue.belongsTo(models.Vendor)
+      Venue.hasMany(models.Venue_Photo)
+      Venue.hasMany(models.Document)
     }
   };
   Venue.init({

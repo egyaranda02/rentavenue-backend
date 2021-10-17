@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Vendor.hasOne(models.Wallet)
+      Vendor.hasMany(models.Venue)
     }
   };
   Vendor.init({
