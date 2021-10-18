@@ -3,6 +3,7 @@ const uuid = require('uuid');
 const multer = require('multer');
 const path = require('path');
 const vendorRouter = express.Router();
+const authMiddleware = require('../../middleware/authMiddleware');
 const vendorController = require('../../controllers/vendorController');
 
 const storage = multer.diskStorage({
@@ -28,7 +29,7 @@ const upload = multer({
 });
 
 vendorRouter.post('/register', vendorController.register);
-vendorRouter.patch('/:id', upload.single('profile_picture'), vendorController.editVendor);
+vendorRouter.patch('/:id', authMiddleware.checkLogin, upload.single('profile_picture'), vendorController.editVendor);
 vendorRouter.get('/verify', vendorController.verification);
 vendorRouter.get('/:id', vendorController.getVendorDetails);
 vendorRouter.post('/login', vendorController.login);

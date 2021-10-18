@@ -1,6 +1,7 @@
 const db = require("../models/index.js");
 const { Op } = require("sequelize");
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 require("dotenv").config({ path: "./.env" });
 
 module.exports.Create = async function(req, res){
@@ -36,6 +37,39 @@ module.exports.Create = async function(req, res){
             latitude
         });
         const VenueId = venue.id;
+        let filename
+        let type
+        // Upload KTP
+        type = 'ktp'
+        filename = req.files['ktp'][0].filename;
+        console.log(filename);
+        try{
+            await db.Document.create({
+                VenueId,
+                filename,
+                type
+            })
+        }catch(error){
+            return res.status(200).json({
+                success:false,
+                errors: error
+            })
+        }
+        // Upload Surat Tanah
+        type = 'surat_tanah'
+        filename = req.files['surat_tanah'][0].filename;
+        try{
+            await db.Document.create({
+                VenueId,
+                filename,
+                type
+            })
+        }catch(error){
+            return res.status(200).json({
+                success:false,
+                errors: error
+            })
+        }
         req.files['venue_photos'].forEach(async function(file){
             filename = file.filename;
             try{
@@ -51,7 +85,8 @@ module.exports.Create = async function(req, res){
             }
         })
         return res.status(200).json({
-            message: "ok"
+            success:true,
+            message: "Venue created"
         });
     }catch(error){
         if(error.name === "SequelizeValidationError"){
@@ -87,9 +122,45 @@ module.exports.EditVenue = async function(req,res){
     } = req.body
     try{
         const venue = await db.Venue.findByPk(req.params.id);
+        if(!venue){
+            if(req.files['ktp']){
+                fs.unlinkSync(`./assets/venue/documents/${req.files['ktp'][0].filename}`)
+            }
+            if(req.files['ktp']){
+                fs.unlinkSync(`./assets/venue/documents/${req.files['surat_tanah'][0].filename}`)
+            }
+            if(req.files['venue_photos']){
+                req.files['venue_photos'].forEach(async function(file){
+                    filename = file.filename;
+                    fs.unlinkSync(`./assets/venue/venue_photos/${filename}`)
+                })
+            }
+            return res.status(200).json({
+                success:false,
+                message: "Venue not found"
+            })
+        }
+        const VenueId = venue.id;
+        if(req.files['ktp']){
+            const ktp = await db.Document.findOne({where: {VenueId: VenueId, type: 'ktp'}})
+            const filename_ktp = req.files['ktp'][0].filename;
+            console.log(filename_ktp);
+            fs.unlinkSync(`./assets/venue/documents/${ktp.filename}`)
+            ktp.update({
+                filename: filename_ktp
+            })
+        }
+        if(req.files['surat_tanah']){
+            const surat_tanah = await db.Document.findOne({where: {VenueId: VenueId, type: 'surat_tanah'}})
+            const filename_surat = req.files['surat_tanah'][0].filename;
+            fs.unlinkSync(`./assets/venue/documents/${surat_tanah.filename}`)
+            surat_tanah.update({
+                filename: filename_surat
+            })
+        }
         if(req.files['venue_photos']){
-            const VenueId = venue.id;
             const PhotoCount = await db.Venue_Photo.findAndCountAll({where: {VenueId: VenueId}})
+            let filename
             if(PhotoCount.count > 5){
                 return res.status(200).json({
                     success:false,

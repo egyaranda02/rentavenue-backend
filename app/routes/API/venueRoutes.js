@@ -7,10 +7,10 @@ const venueController = require('../../controllers/venueController');
 
 const storage = multer.diskStorage({
     destination: function(req, file, next){
-        if(file.fieldname === 'documents'){
-            next(null, 'assets/venue/documents');
-        }else{
+        if(file.fieldname === 'venue_photos'){
             next(null, 'assets/venue/venue_photos');
+        }else{
+            next(null, 'assets/venue/documents');
         }
     },
     filename: function(req, file, next){
@@ -31,8 +31,8 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-venueRouter.post('/', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'documents', maxCount: 5}]), venueController.Create);
-venueRouter.patch('/:id', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'documents', maxCount: 5}]), venueController.EditVenue);
+venueRouter.post('/', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.Create);
+venueRouter.patch('/:id', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.EditVenue);
 venueRouter.delete('/:id', venueController.deleteVenue);
 
 

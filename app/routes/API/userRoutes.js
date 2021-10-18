@@ -3,6 +3,7 @@ const uuid = require('uuid');
 const multer = require('multer');
 const path = require('path');
 const userRouter = express.Router();
+const authMiddleware = require('../../middleware/authMiddleware');
 const userController = require('../../controllers/userController');
 
 const storage = multer.diskStorage({
@@ -29,9 +30,9 @@ const upload = multer({
 
 
 userRouter.post('/register', userController.register);
-userRouter.patch('/:id', upload.single('profile_picture'), userController.editUser);
+userRouter.patch('/:id', authMiddleware.checkLogin, upload.single('profile_picture'), userController.editUser);
 userRouter.get('/verify', userController.verification);
-userRouter.get('/:id', userController.getUserDetail);
+userRouter.get('/:id', authMiddleware.checkLogin, userController.getUserDetail);
 userRouter.post('/login', userController.login);
 userRouter.post('/logout', userController.logout);
 
