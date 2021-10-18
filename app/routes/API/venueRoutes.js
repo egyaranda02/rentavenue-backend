@@ -3,6 +3,7 @@ const uuid = require('uuid');
 const multer = require('multer');
 const path = require('path');
 const venueRouter = express.Router();
+const authMiddleware = require('../../middleware/authMiddleware');
 const venueController = require('../../controllers/venueController');
 
 const storage = multer.diskStorage({
@@ -33,8 +34,8 @@ const upload = multer({
 
 venueRouter.get('/city', venueController.getCity);
 venueRouter.get('/search', venueController.searchVenue);
-venueRouter.post('/', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.Create);
-venueRouter.patch('/:id', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.EditVenue);
-venueRouter.delete('/:id', venueController.deleteVenue);
+venueRouter.post('/', authMiddleware.checkLogin, upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.Create);
+venueRouter.patch('/:id', authMiddleware.checkLogin, upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.EditVenue);
+venueRouter.delete('/:id', authMiddleware.checkLogin, venueController.deleteVenue);
 
 module.exports = venueRouter;
