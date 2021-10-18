@@ -30,7 +30,7 @@ module.exports.getUserDetail = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message
         });
     }
 }
@@ -100,7 +100,7 @@ module.exports.register = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success:false,
-            errors: error
+            errors: error.message
         })
     }
 }
@@ -132,7 +132,7 @@ module.exports.verification = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message
         });
     }
 };
@@ -168,7 +168,7 @@ module.exports.login = async function(req, res){
                 message: "Email and password didn't match",
             });
         }
-        res.status(200).json({
+        return res.status(200).json({
             errors: {
                 attribute: "Authentication",
                 message: "Email is not registered",
@@ -177,7 +177,7 @@ module.exports.login = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message
         });
     }
 }
@@ -240,7 +240,7 @@ module.exports.editUser = async function(req,res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message
         });
     }
 }

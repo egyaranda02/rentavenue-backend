@@ -6,12 +6,16 @@ const { sequelize } = require("../models/index.js");
 require("dotenv").config({ path: "./.env" });
 
 
+module.exports.detailedSearch = async function(req, res){
+
+}
+
 module.exports.searchVenue = async function(req, res){
     try{
         const findVenue = await db.Venue.findAll({ where: {
             [Op.or]: [
-                { name: { [Op.like]: `%${req.query.query_string}%` } },
-                { city: { [Op.like]: `%${req.query.query_string}%` } }
+                { name: { [Op.iLike]: `%${req.query.query_string}%` } },
+                { city: { [Op.iLike]: `%${req.query.query_string}%` } }
             ],
             is_verified: true
         }})
@@ -22,7 +26,7 @@ module.exports.searchVenue = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success:false,
-            errors: error
+            errors: error.message
         })
     }
 }

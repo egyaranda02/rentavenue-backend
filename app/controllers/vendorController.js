@@ -30,7 +30,7 @@ module.exports.getVendorDetails = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message,
         });
     }
 }
@@ -102,7 +102,7 @@ module.exports.register = async function(req,res){
         console.log(error);
         return res.status(200).json({
             success:false,
-            errors: error
+            errors: error.message
         })
     }
 }
@@ -133,7 +133,7 @@ module.exports.verification = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message,
         });
     }
 }
@@ -177,7 +177,7 @@ module.exports.login = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message,
         });
     }
 }
@@ -239,7 +239,7 @@ module.exports.editVendor = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success: false,
-            errors: error,
+            errors: error.message,
         });
     }
 }
