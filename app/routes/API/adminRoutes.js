@@ -10,5 +10,6 @@ adminRouter.post('/login', adminController.login);
 adminRouter.get('/venue', adminController.getVenue);
 adminRouter.get('/venue/:id', adminController.getDetailVenue);
 adminRouter.get('/user', adminController.getUser);
+adminRouter.post('/logout', adminController.logout);
 
 module.exports = adminRouter;
