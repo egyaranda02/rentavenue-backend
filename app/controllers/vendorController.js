@@ -11,6 +11,14 @@ const smtpTransportModule = require("nodemailer-smtp-transport");
 
 const tokenAge = 60 * 60;
 
+const checkVendor = (id, token) =>{
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const VendorId = decoded.VendorId;
+    if(id != VendorId){
+        return true
+    }
+} 
+
 module.exports.getVendorDetails = async function(req, res){
     try{
         const vendor = await db.Vendor.findByPk(req.params.id, {
@@ -191,6 +199,13 @@ module.exports.editVendor = async function(req, res){
         description
     } = req.body;
     const findVendor = await db.Vendor.findByPk(req.params.id);
+    const token = req.cookies.jwt;
+    if(checkVendor(findVendor.id, token)){
+        return res.status(200).json({
+            success: false,
+            messages: "Unauthorized",
+        });
+    }
     // Require password for edit profile
     if (password == null) {
         return res.status(200).json({
