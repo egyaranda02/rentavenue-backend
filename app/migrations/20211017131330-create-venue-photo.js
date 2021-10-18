@@ -11,7 +11,8 @@ module.exports = {
       VenueId: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: {model: 'Venues', key:'id'}
+        references: {model: 'Venues', key:'id'},
+        onDelete: 'CASCADE'
       },
       filename:{
         allowNull: false,

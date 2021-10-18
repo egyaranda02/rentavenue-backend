@@ -11,12 +11,14 @@ module.exports = {
       UserId: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {model: 'Users', key:'id'}
+        references: {model: 'Users', key:'id'},
+        onDelete: 'CASCADE'
       },
       VendorId: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {model: 'Vendors', key:'id'}
+        references: {model: 'Vendors', key:'id'},
+        onDelete: 'CASCADE'
       },
       balance: {
         type: Sequelize.INTEGER

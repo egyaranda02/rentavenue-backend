@@ -10,7 +10,8 @@ module.exports = {
       },
       VendorId: {
         type: Sequelize.INTEGER,
-        references: {model: 'Vendors', key:'id'}
+        references: {model: 'Vendors', key:'id'},
+        onDelete: 'CASCADE'
       },
       name: {
         type: Sequelize.STRING,

@@ -10,11 +10,13 @@ module.exports = {
       },
       id_user: {
         type: Sequelize.INTEGER,
-        references: {model: 'Users', key:'id'}
+        references: {model: 'Users', key:'id'},
+        onDelete: 'CASCADE'
       },
       id_vendor: {
         type: Sequelize.INTEGER,
-        references: {model: 'Vendors', key:'id'}
+        references: {model: 'Vendors', key:'id'},
+        onDelete: 'CASCADE'
       },
       token: {
         type: Sequelize.STRING
