@@ -2,7 +2,49 @@ const db = require("../models/index.js");
 const { Op } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+const { sequelize } = require("../models/index.js");
 require("dotenv").config({ path: "./.env" });
+
+
+module.exports.searchVenue = async function(req, res){
+    try{
+        const findVenue = await db.Venue.findAll({ where: {
+            [Op.or]: [
+                { name: { [Op.like]: `%${req.query.query_string}%` } },
+                { city: { [Op.like]: `%${req.query.query_string}%` } }
+            ],
+            is_verified: true
+        }})
+        return res.status(200).json({
+            success:true,
+            data: findVenue
+        })
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error
+        })
+    }
+}
+
+module.exports.getCity = async function(req, res){
+    try{
+        const venue = await db.Venue.findAll({
+            attributes: ['city', 'Venue.city', [sequelize.fn('count', sequelize.col('Venue.id')), 'venueCount']],
+            group: ['Venue.city'],
+        });
+        return res.status(200).json({
+            success:true,
+            data: venue
+        })
+    }catch(error){
+        console.log(error);
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
 
 module.exports.Create = async function(req, res){
     const{
@@ -52,7 +94,7 @@ module.exports.Create = async function(req, res){
         }catch(error){
             return res.status(200).json({
                 success:false,
-                errors: error
+                errors: error.message
             })
         }
         // Upload Surat Tanah
@@ -67,7 +109,7 @@ module.exports.Create = async function(req, res){
         }catch(error){
             return res.status(200).json({
                 success:false,
-                errors: error
+                errors: error.message
             })
         }
         req.files['venue_photos'].forEach(async function(file){
@@ -80,7 +122,7 @@ module.exports.Create = async function(req, res){
             }catch(error){
                 return res.status(200).json({
                     success:false,
-                    errors: error
+                    errors: error.message
                 })
             }
         })
@@ -103,7 +145,7 @@ module.exports.Create = async function(req, res){
             console.log(error);
             return res.status(200).json({
                 success:false,
-                errors: error
+                errors: error.message
             })
         };
     }
@@ -178,7 +220,7 @@ module.exports.EditVenue = async function(req,res){
                     console.log(error)
                     return res.status(200).json({
                         success:false,
-                        errors: error
+                        errors: error.message
                     })
                 }
             })
@@ -200,7 +242,7 @@ module.exports.EditVenue = async function(req,res){
     }catch(error){
         return res.status(200).json({
             success:false,
-            errors: error
+            errors: error.message
         })
     }
 }
@@ -217,7 +259,7 @@ module.exports.deleteVenue = async function(req, res){
         console.log(error);
         return res.status(200).json({
             success:false,
-            errors: error
+            errors: error.message
         })
     }
 }

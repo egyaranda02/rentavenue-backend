@@ -31,9 +31,10 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
+venueRouter.get('/city', venueController.getCity);
+venueRouter.get('/search', venueController.searchVenue);
 venueRouter.post('/', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.Create);
 venueRouter.patch('/:id', upload.fields([{name:'venue_photos', maxCount: 5}, {name:'ktp', maxCount: 1}, {name:'surat_tanah', maxCount: 1}]), venueController.EditVenue);
 venueRouter.delete('/:id', venueController.deleteVenue);
-
 
 module.exports = venueRouter;
