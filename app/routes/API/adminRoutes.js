@@ -7,5 +7,8 @@ const authMiddleware = require('../../middleware/authMiddleware');
 const adminController = require('../../controllers/adminController');
 
 adminRouter.post('/login', adminController.login);
+adminRouter.get('/venue', adminController.getVenue);
+adminRouter.get('/venue/:id', adminController.getDetailVenue);
+adminRouter.get('/user', adminController.getUser);
 
 module.exports = adminRouter;

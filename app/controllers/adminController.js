@@ -42,3 +42,62 @@ module.exports.login = async function(req, res){
         });
     }
 }
+
+module.exports.getVenue = async function(req, res){
+    try{
+        const findVenue = await db.Venue.findAll();
+        return res.status(200).json({
+            success: true,
+            data: findVenue
+        })
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
+
+module.exports.getDetailVenue = async function(req, res){
+    try{
+        const findVenue = await db.Venue.findOne({where: {id: req.params.id},
+            include:[
+                {
+                    model: db.Document,
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
+                },{
+                    model: db.Venue_Photo,
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        })
+        return res.status(200).json({
+            success: true,
+            data: findVenue
+        })
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
+
+module.exports.getUser = async function(req, res){
+    try{
+        const findUser = await db.User.findAll();
+        return res.status(200).json({
+            success: true,
+            data: findUser
+        })
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
