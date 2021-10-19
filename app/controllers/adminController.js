@@ -58,6 +58,21 @@ module.exports.getVenue = async function(req, res){
     }
 }
 
+module.exports.getVenueNotVerified = async function(req, res){
+    try{
+        const findVenue = await db.Venue.findAll({where: {is_verified: false}});
+        return res.status(200).json({
+            success: true,
+            data: findVenue
+        })
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
+
 module.exports.getDetailVenue = async function(req, res){
     try{
         const findVenue = await db.Venue.findOne({where: {id: req.params.id},
@@ -78,6 +93,85 @@ module.exports.getDetailVenue = async function(req, res){
         return res.status(200).json({
             success: true,
             data: findVenue
+        })
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
+
+module.exports.venueVerification = async function(req, res){
+    const {respond} = req.body;
+    try{
+        const findVenue = await db.Venue.findByPk(req.params.id);
+        if(!findVenue){
+            return res.status(200).json({
+                success: false,
+                message: "Venue not found"
+            })
+        }
+        if(!respond){
+            return res.status(200).json({
+                success: false,
+                message: "please enter a respond"
+            })
+        }
+        if(respond == "accept"){
+            if(findVenue.is_verified == true){
+                return res.status(200).json({
+                    success:false,
+                    messages: "This venue is already verified"
+                })
+            }
+            findVenue.update({
+                is_verified: true,
+                status: "active"
+            })
+            return res.status(200).json({
+                success:true,
+                message: "Venue is verified"
+            })
+        }
+        if(respond == "reject"){
+            findVenue.update({
+                status: "rejected"
+            })
+            return res.status(200).json({
+                success:true,
+                message: "Venue rejected"
+            })
+        }
+        return res.status(200).json({
+            success: false,
+            message: "please enter a correct respond"
+        })
+
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
+
+module.exports.blockVenue = async function(req, res){
+    try{
+        const findVenue = db.Venue.findByPk(req.params.id);
+        if(!findVenue){
+            return res.status(200).json({
+                success: false,
+                message: "Venue not found"
+            })
+        }
+        findVenue.update({
+            is_verified: false,
+            status: "blocked"
+        })
+        return res.status(200).json({
+            success: true,
+            message: "Venue Blocked"
         })
     }catch(error){
         return res.status(200).json({

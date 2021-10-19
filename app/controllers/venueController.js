@@ -10,6 +10,30 @@ module.exports.detailedSearch = async function(req, res){
 
 }
 
+module.exports.getDetailVenue = async function(req, res){
+    try{
+        const findVenue = await db.Venue.findOne({where: {id: req.params.id},
+            include:[
+                {
+                    model: db.Venue_Photo,
+                    attributes: {
+                        exclude: ['VenueId','createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        })
+        return res.status(200).json({
+            success: true,
+            data: findVenue
+        })
+    }catch(error){
+        return res.status(200).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
+
 module.exports.searchVenue = async function(req, res){
     try{
         const findVenue = await db.Venue.findAll({ where: {
@@ -33,7 +57,7 @@ module.exports.searchVenue = async function(req, res){
 
 module.exports.getCity = async function(req, res){
     try{
-        const venue = await db.Venue.findAll({
+        const venue = await db.Venue.findAll({ where: {is_verified: true},
             attributes: ['city', 'Venue.city', [sequelize.fn('count', sequelize.col('Venue.id')), 'venueCount']],
             group: ['Venue.city'],
         });
@@ -85,6 +109,7 @@ module.exports.Create = async function(req, res){
         const VenueId = venue.id;
         let filename
         let type
+        console.log(req.files);
         // Upload KTP
         type = 'ktp'
         filename = req.files['ktp'][0].filename;
@@ -101,6 +126,7 @@ module.exports.Create = async function(req, res){
                 errors: error.message
             })
         }
+
         // Upload Surat Tanah
         type = 'surat_tanah'
         filename = req.files['surat_tanah'][0].filename;
@@ -116,6 +142,7 @@ module.exports.Create = async function(req, res){
                 errors: error.message
             })
         }
+        
         req.files['venue_photos'].forEach(async function(file){
             filename = file.filename;
             try{
@@ -160,21 +187,11 @@ module.exports.EditVenue = async function(req,res){
         name,
         capacity,
         description,
-        price,
-        city,
-        address,
-        longitude,
-        latitude
+        price
     } = req.body
     try{
         const venue = await db.Venue.findByPk(req.params.id);
         if(!venue){
-            if(req.files['ktp']){
-                fs.unlinkSync(`./assets/venue/documents/${req.files['ktp'][0].filename}`)
-            }
-            if(req.files['ktp']){
-                fs.unlinkSync(`./assets/venue/documents/${req.files['surat_tanah'][0].filename}`)
-            }
             if(req.files['venue_photos']){
                 req.files['venue_photos'].forEach(async function(file){
                     filename = file.filename;
@@ -187,23 +204,6 @@ module.exports.EditVenue = async function(req,res){
             })
         }
         const VenueId = venue.id;
-        if(req.files['ktp']){
-            const ktp = await db.Document.findOne({where: {VenueId: VenueId, type: 'ktp'}})
-            const filename_ktp = req.files['ktp'][0].filename;
-            console.log(filename_ktp);
-            fs.unlinkSync(`./assets/venue/documents/${ktp.filename}`)
-            ktp.update({
-                filename: filename_ktp
-            })
-        }
-        if(req.files['surat_tanah']){
-            const surat_tanah = await db.Document.findOne({where: {VenueId: VenueId, type: 'surat_tanah'}})
-            const filename_surat = req.files['surat_tanah'][0].filename;
-            fs.unlinkSync(`./assets/venue/documents/${surat_tanah.filename}`)
-            surat_tanah.update({
-                filename: filename_surat
-            })
-        }
         if(req.files['venue_photos']){
             const PhotoCount = await db.Venue_Photo.findAndCountAll({where: {VenueId: VenueId}})
             let filename
@@ -233,11 +233,7 @@ module.exports.EditVenue = async function(req,res){
             name: name,
             capacity: capacity,
             description: description,
-            price: price,
-            city: city,
-            address: address,
-            longitude: longitude,
-            latitude: latitude
+            price: price
         });
         return res.status(200).json({
             messages: "Venue updated!",

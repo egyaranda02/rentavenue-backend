@@ -54,6 +54,10 @@ module.exports = (sequelize, DataTypes) => {
     is_verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: "pending"
     }
   }, {
     sequelize,
