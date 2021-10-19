@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       Venue.belongsTo(models.Vendor)
       Venue.hasMany(models.Venue_Photo)
       Venue.hasMany(models.Document)
+      Venue.hasMany(models.Feedback)
+      Venue.hasMany(models.Transaction)
     }
   };
   Venue.init({

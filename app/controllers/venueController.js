@@ -109,12 +109,11 @@ module.exports.Create = async function(req, res){
         const VenueId = venue.id;
         let filename
         let type
-        console.log(req.files);
+        
         // Upload KTP
-        type = 'ktp'
-        filename = req.files['ktp'][0].filename;
-        console.log(filename);
         try{
+            type = 'ktp'
+            filename = req.files['ktp'][0].filename;
             await db.Document.create({
                 VenueId,
                 filename,
@@ -128,9 +127,9 @@ module.exports.Create = async function(req, res){
         }
 
         // Upload Surat Tanah
-        type = 'surat_tanah'
-        filename = req.files['surat_tanah'][0].filename;
         try{
+            type = 'surat_tanah'
+            filename = req.files['surat_tanah'][0].filename;
             await db.Document.create({
                 VenueId,
                 filename,
