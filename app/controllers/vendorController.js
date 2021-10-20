@@ -8,6 +8,7 @@ const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const smtpTransportModule = require("nodemailer-smtp-transport");
+const { triggerAsyncId } = require("async_hooks");
 
 const tokenAge = 60 * 60;
 
@@ -32,11 +33,18 @@ module.exports.getVendorDetails = async function(req, res){
                 'profile_picture'
             ]
         })
+        if(!vendor){
+            return res.status(404).json({
+                success: false,
+                message: "Vendor not found",
+            });
+        }
         return res.status(200).json({
+            success: true,
             data: vendor,
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message,
         });
@@ -57,7 +65,7 @@ module.exports.register = async function(req,res){
         const findEmailUser = await db.User.findOne({where: {email: email}});
         const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
         if(findEmailUser || findEmailVendor){
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
                 messages: "Email has been used"
             });
@@ -93,7 +101,10 @@ module.exports.register = async function(req,res){
         smtpTransport.sendMail(mailOptions, function (error, response) {
             if (error) {
                 console.log(error);
-                return res.status(200).json("error");
+                return res.status(400).json({
+                    success: false,
+                    message: "Failed to send email",
+                });
             } else {
                 console.log("Message sent");
             }
@@ -108,7 +119,7 @@ module.exports.register = async function(req,res){
         });
     }catch(error){
         console.log(error);
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -129,17 +140,17 @@ module.exports.verification = async function(req, res){
                 VendorId,
                 UserId
             })
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 messages: "Email verification success",
             });
         }
-        return res.status(200).json({
+        return res.status(404).json({
             success: false,
             errors: "Token not found",
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message,
         });
@@ -151,7 +162,7 @@ module.exports.login = async function(req, res){
         const vendor = await db.Vendor.findOne({where: {email: req.body.email}});
         if(vendor){
             if(vendor.is_verified == false){
-                return res.status(200).json({
+                return res.status(401).json({
                     errors: {
                         attribute: "Authentication",
                         message: "Please activate your email first",
@@ -162,7 +173,7 @@ module.exports.login = async function(req, res){
             if(passwordAuth){
                 const token = await jwt.sign({VendorId: vendor.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
                 res.cookie("jwt", token, { maxAge: 60*60*1000 });
-                return res.status(201).json({
+                return res.status(200).json({
                     success: true,
                     message: "Login Success",
                     data: {
@@ -171,19 +182,19 @@ module.exports.login = async function(req, res){
                     }
                 });
             }
-            return res.status(200).json({
+            return res.status(401).json({
                 success: false,
                 message: "Email and password didn't match",
             });
         }
-        res.status(200).json({
+        res.status(404).json({
             errors: {
                 attribute: "Authentication",
                 message: "Email is not registered",
             },
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message,
         });
@@ -201,20 +212,20 @@ module.exports.editVendor = async function(req, res){
     const findVendor = await db.Vendor.findByPk(req.params.id);
     const token = req.cookies.jwt;
     if(checkVendor(findVendor.id, token)){
-        return res.status(200).json({
+        return res.status(401).json({
             success: false,
             messages: "Unauthorized",
         });
     }
     // Require password for edit profile
     if (password == null) {
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             messages: "Please enter the password",
         });
     }
     if (!findVendor) {
-        return res.status(200).json({
+        return res.status(404).json({
             success: false,
             messages: "Vendor not found!",
         });
@@ -222,7 +233,7 @@ module.exports.editVendor = async function(req, res){
     // compare password
     const comparePassword = bcrypt.compareSync(password, findVendor.password);
     if(!comparePassword){
-        return res.status(200).json({
+        return res.status(401).json({
             success: false,
             messages: "Wrong Password!",
         });
@@ -252,7 +263,7 @@ module.exports.editVendor = async function(req, res){
             }
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message,
         });

@@ -24,11 +24,18 @@ module.exports.getUserDetail = async function(req, res){
                 'profile_picture'
             ]
         })
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
         return res.status(200).json({
+            success: true,
             data: user,
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message
         });
@@ -48,7 +55,7 @@ module.exports.register = async function(req, res){
         const findEmailUser = await db.User.findOne({where: {email: email}});
         const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
         if(findEmailUser || findEmailVendor){
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
                 messages: "Email has been used"
             });
@@ -84,7 +91,10 @@ module.exports.register = async function(req, res){
         smtpTransport.sendMail(mailOptions, function (error, response) {
             if (error) {
                 console.log(error);
-                return res.status(200).json("error");
+                return res.status(400).json({
+                    success: false,
+                    message: "Failed to send email"
+                });
             } else {
                 console.log("Message sent");
             }
@@ -98,7 +108,7 @@ module.exports.register = async function(req, res){
             data: user
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -119,18 +129,18 @@ module.exports.verification = async function(req, res){
                 UserId,
                 VendorId
             })
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 messages: "Email verification success",
             });
         }else{
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
                 errors: "Token not found",
             });
         }
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message
         });
@@ -142,11 +152,9 @@ module.exports.login = async function(req, res){
         const user = await db.User.findOne({ where: {email: req.body.email} });
         if(user){
             if(user.is_verified == false){
-                return res.status(200).json({
-                    errors: {
-                        attribute: "Authentication",
-                        message: "Please activate your email first",
-                    },
+                return res.status(400).json({
+                    succes: false,
+                    message: "Please verify you email first"
                 });
             }
             const passwordAuth = bcrypt.compareSync(req.body.password, user.password);
@@ -163,19 +171,17 @@ module.exports.login = async function(req, res){
                     }
                 });
             }
-            return res.status(200).json({
+            return res.status(401).json({
                 success: false,
                 message: "Email and password didn't match",
             });
         }
-        return res.status(200).json({
-            errors: {
-                attribute: "Authentication",
-                message: "Email is not registered",
-            },
+        return res.status(404).json({
+            success: false,
+            message: "Email is not registered",
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message
         });
@@ -193,13 +199,13 @@ module.exports.editUser = async function(req,res){
     const findUser = await db.User.findByPk(req.params.id);
     // Password required
     if (password == null) {
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             messages: "Please enter the password",
         });
     }
     if (!findUser) {
-        return res.status(200).json({
+        return res.status(404).json({
             success: false,
             messages: "User not found!",
         });
@@ -207,7 +213,7 @@ module.exports.editUser = async function(req,res){
     const comparePassword = bcrypt.compareSync(password, findUser.password);
     // If password false
     if (!comparePassword) {
-        return res.status(200).json({
+        return res.status(401).json({
             success: false,
             messages: "Wrong Password!",
         });
@@ -238,7 +244,7 @@ module.exports.editUser = async function(req,res){
             }
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message
         });
@@ -247,7 +253,7 @@ module.exports.editUser = async function(req,res){
 
 module.exports.logout = (req, res) => {
     res.cookie("jwt", "", { maxAge: 1 });
-    res.status(201).json({
+    res.status(200).json({
         success: true,
         message: "Logout Success",
     });

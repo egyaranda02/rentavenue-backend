@@ -16,7 +16,7 @@ module.exports.login = async function(req, res){
             if(passwordAuth){
                 const token = await jwt.sign({AdminId: admin.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
                 res.cookie('jwt', token, {maxAge: 60*5*1000});
-                return res.status(201).json({
+                return res.status(200).json({
                     success: true,
                     message: "Login Success",
                     data: {
@@ -24,19 +24,19 @@ module.exports.login = async function(req, res){
                     }
                 });
             }
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
                 message: "Email and password didn't match",
             });
         }
-        return res.status(200).json({
+        return res.status(400).json({
             errors: {
                 attribute: "Authentication",
                 message: "Email is not registered",
             },
         });
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message
         });
@@ -51,7 +51,7 @@ module.exports.getVenue = async function(req, res){
             data: findVenue
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -66,7 +66,7 @@ module.exports.getVenueNotVerified = async function(req, res){
             data: findVenue
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -95,7 +95,7 @@ module.exports.getDetailVenue = async function(req, res){
             data: findVenue
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -107,20 +107,20 @@ module.exports.venueVerification = async function(req, res){
     try{
         const findVenue = await db.Venue.findByPk(req.params.id);
         if(!findVenue){
-            return res.status(200).json({
+            return res.status(404).json({
                 success: false,
                 message: "Venue not found"
             })
         }
         if(!respond){
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
                 message: "please enter a respond"
             })
         }
         if(respond == "accept"){
             if(findVenue.is_verified == true){
-                return res.status(200).json({
+                return res.status(400).json({
                     success:false,
                     messages: "This venue is already verified"
                 })
@@ -143,13 +143,13 @@ module.exports.venueVerification = async function(req, res){
                 message: "Venue rejected"
             })
         }
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             message: "please enter a correct respond"
         })
 
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -160,7 +160,7 @@ module.exports.blockVenue = async function(req, res){
     try{
         const findVenue = db.Venue.findByPk(req.params.id);
         if(!findVenue){
-            return res.status(200).json({
+            return res.status(404).json({
                 success: false,
                 message: "Venue not found"
             })
@@ -174,7 +174,7 @@ module.exports.blockVenue = async function(req, res){
             message: "Venue Blocked"
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -198,7 +198,7 @@ module.exports.getUser = async function(req, res){
 
 module.exports.logout = (req, res) => {
     res.cookie("jwt", "", { maxAge: 1 });
-    res.status(201).json({
+    res.status(200).json({
         success: true,
         message: "Logout Success",
     });

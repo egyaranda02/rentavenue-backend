@@ -15,13 +15,13 @@ module.exports.createTransaction = async function(req, res){
     } = req.body
     const now = moment();
     if(moment(start_book).isBefore(now)){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: "Can't book days in the past"
         });
     }
     if(moment(finish_book).isBefore(start_book)){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: "Error input book time"
         });
@@ -74,7 +74,7 @@ module.exports.createTransaction = async function(req, res){
         })
         console.log(venueBook);
         if(venueBook){
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
                 errors: "Date is taken"
             });
@@ -120,11 +120,11 @@ module.exports.createTransaction = async function(req, res){
             let transactionRedirectUrl = trade.redirect_url;
             console.log('transactionRedirectUrl:',transactionRedirectUrl);
         })
-        return res.status(201).json({
+        return res.status(200).json({
             data: transaction
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message,
         });
@@ -144,7 +144,7 @@ module.exports.MidtransNotification = async function(req,res){
             status: transaction_status
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success: false,
             errors: error.message,
         });

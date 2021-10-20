@@ -22,12 +22,18 @@ module.exports.getDetailVenue = async function(req, res){
                 }
             ]
         })
+        if(!findVenue){
+            return res.status(404).json({
+                success: false,
+                message: "Venue not found",
+            });
+        }
         return res.status(200).json({
             success: true,
             data: findVenue
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -48,7 +54,7 @@ module.exports.searchVenue = async function(req, res){
             data: findVenue
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -67,7 +73,7 @@ module.exports.getCity = async function(req, res){
         })
     }catch(error){
         console.log(error);
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -90,7 +96,7 @@ module.exports.Create = async function(req, res){
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
         const VendorId = decoded.VendorId;
         if(VendorId == null){
-            return res.status(201).json({
+            return res.status(401).json({
                 succes: false,
                 message: "You are not a vendor"
             });
@@ -120,7 +126,7 @@ module.exports.Create = async function(req, res){
                 type
             })
         }catch(error){
-            return res.status(200).json({
+            return res.status(400).json({
                 success:false,
                 errors: error.message
             })
@@ -136,7 +142,7 @@ module.exports.Create = async function(req, res){
                 type
             })
         }catch(error){
-            return res.status(200).json({
+            return res.status(400).json({
                 success:false,
                 errors: error.message
             })
@@ -150,19 +156,19 @@ module.exports.Create = async function(req, res){
                     filename
                 })
             }catch(error){
-                return res.status(200).json({
+                return res.status(400).json({
                     success:false,
                     errors: error.message
                 })
             }
         })
-        return res.status(200).json({
+        return res.status(201).json({
             success:true,
-            message: "Venue created"
+            data: venue
         });
     }catch(error){
         if(error.name === "SequelizeValidationError"){
-            return res.status(200).json({
+            return res.status(400).json({
                 success:false,
                 errors: error.errors.map((e)=>{
                     return{
@@ -173,7 +179,7 @@ module.exports.Create = async function(req, res){
             })
         }else{
             console.log(error);
-            return res.status(200).json({
+            return res.status(400).json({
                 success:false,
                 errors: error.message
             })
@@ -197,7 +203,7 @@ module.exports.EditVenue = async function(req,res){
                     fs.unlinkSync(`./assets/venue/venue_photos/${filename}`)
                 })
             }
-            return res.status(200).json({
+            return res.status(404).json({
                 success:false,
                 message: "Venue not found"
             })
@@ -207,7 +213,7 @@ module.exports.EditVenue = async function(req,res){
             const PhotoCount = await db.Venue_Photo.findAndCountAll({where: {VenueId: VenueId}})
             let filename
             if(PhotoCount.count > 5){
-                return res.status(200).json({
+                return res.status(400).json({
                     success:false,
                     message: "Max photo reached (5)"
                 })
@@ -221,7 +227,7 @@ module.exports.EditVenue = async function(req,res){
                     })
                 }catch(error){
                     console.log(error)
-                    return res.status(200).json({
+                    return res.status(400).json({
                         success:false,
                         errors: error.message
                     })
@@ -239,7 +245,7 @@ module.exports.EditVenue = async function(req,res){
             data: venue
         })
     }catch(error){
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
@@ -256,7 +262,7 @@ module.exports.deleteVenue = async function(req, res){
         })
     }catch(error){
         console.log(error);
-        return res.status(200).json({
+        return res.status(400).json({
             success:false,
             errors: error.message
         })
