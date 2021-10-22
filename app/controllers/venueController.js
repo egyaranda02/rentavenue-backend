@@ -80,6 +80,23 @@ module.exports.getCity = async function(req, res){
     }
 }
 
+module.exports.getVenueByCity = async function(req, res){
+    try{
+        const venue = await db.Venue.findAll({ 
+            where: {city: req.params.city},
+        });
+        return res.status(200).json({
+            success:true,
+            data: venue
+        })
+    }catch(error){
+        return res.status(400).json({
+            success:false,
+            errors: error.message
+        })
+    }
+}
+
 module.exports.Create = async function(req, res){
     const{
         name,
