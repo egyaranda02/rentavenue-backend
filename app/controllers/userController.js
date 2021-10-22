@@ -37,7 +37,7 @@ module.exports.getUserDetail = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success: false,
-            errors: error.message
+            message: error.message
         });
     }
 }
@@ -56,7 +56,7 @@ module.exports.register = async function(req, res){
         if(password !== confirm_password){
             return res.status(400).json({
                 success: false,
-                messages: "Password and confirm password is not the same"
+                message: "Password and confirm password is not the same"
             });
         }
         const findEmailUser = await db.User.findOne({where: {email: email}});
@@ -64,7 +64,7 @@ module.exports.register = async function(req, res){
         if(findEmailUser || findEmailVendor){
             return res.status(400).json({
                 success: false,
-                messages: "Email has been used"
+                message: "Email has been used"
             });
         }
         const user = await db.User.create({
@@ -111,13 +111,13 @@ module.exports.register = async function(req, res){
             token: token,
         });
         res.status(201).json({
-            messages: "Register Success!",
+            message: "Register Success!",
             data: user
         });
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -138,18 +138,18 @@ module.exports.verification = async function(req, res){
             })
             return res.status(200).json({
                 success: true,
-                messages: "Email verification success",
+                message: "Email verification success",
             });
         }else{
             return res.status(400).json({
                 success: false,
-                errors: "Token not found",
+                message: "Token not found",
             });
         }
     }catch(error){
         return res.status(400).json({
             success: false,
-            errors: error.message
+            message: error.message
         });
     }
 };
@@ -191,7 +191,7 @@ module.exports.login = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success: false,
-            errors: error.message
+            message: error.message
         });
     }
 }
@@ -209,13 +209,13 @@ module.exports.editUser = async function(req,res){
     if (password == null) {
         return res.status(400).json({
             success: false,
-            messages: "Please enter the password",
+            message: "Please enter the password",
         });
     }
     if (!findUser) {
         return res.status(404).json({
             success: false,
-            messages: "User not found!",
+            message: "User not found!",
         });
     }
     const comparePassword = bcrypt.compareSync(password, findUser.password);
@@ -223,7 +223,7 @@ module.exports.editUser = async function(req,res){
     if (!comparePassword) {
         return res.status(401).json({
             success: false,
-            messages: "Wrong Password!",
+            message: "Wrong Password!",
         });
     }
     // See if user changing profile picture
@@ -244,7 +244,7 @@ module.exports.editUser = async function(req,res){
         });
         return res.status(200).json({
             success: true,
-            messages: "Profile updated!",
+            message: "Profile updated!",
             data: {
                 firstName: findUser.firstName,
                 lastName: findUser.lastName,
@@ -254,7 +254,7 @@ module.exports.editUser = async function(req,res){
     }catch(error){
         return res.status(400).json({
             success: false,
-            errors: error.message
+            message: error.message
         });
     }
 }

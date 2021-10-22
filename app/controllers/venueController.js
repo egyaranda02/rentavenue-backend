@@ -35,7 +35,7 @@ module.exports.getDetailVenue = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -56,7 +56,7 @@ module.exports.searchVenue = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -75,7 +75,7 @@ module.exports.getCity = async function(req, res){
         console.log(error);
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -92,7 +92,7 @@ module.exports.getVenueByCity = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -145,7 +145,7 @@ module.exports.Create = async function(req, res){
         }catch(error){
             return res.status(400).json({
                 success:false,
-                errors: error.message
+                message: error.message
             })
         }
 
@@ -161,7 +161,7 @@ module.exports.Create = async function(req, res){
         }catch(error){
             return res.status(400).json({
                 success:false,
-                errors: error.message
+                message: error.message
             })
         }
         
@@ -175,7 +175,7 @@ module.exports.Create = async function(req, res){
             }catch(error){
                 return res.status(400).json({
                     success:false,
-                    errors: error.message
+                    message: error.message
                 })
             }
         })
@@ -184,23 +184,10 @@ module.exports.Create = async function(req, res){
             data: venue
         });
     }catch(error){
-        if(error.name === "SequelizeValidationError"){
-            return res.status(400).json({
-                success:false,
-                errors: error.errors.map((e)=>{
-                    return{
-                        attribute: e.path,
-                        message: e.message
-                    };
-                })
-            })
-        }else{
-            console.log(error);
-            return res.status(400).json({
-                success:false,
-                errors: error.message
-            })
-        };
+        return res.status(400).json({
+            success:false,
+            message: error.message
+        })
     }
 }
 
@@ -246,7 +233,7 @@ module.exports.EditVenue = async function(req,res){
                     console.log(error)
                     return res.status(400).json({
                         success:false,
-                        errors: error.message
+                        message: error.message
                     })
                 }
             })
@@ -258,13 +245,13 @@ module.exports.EditVenue = async function(req,res){
             price: price
         });
         return res.status(200).json({
-            messages: "Venue updated!",
+            message: "Venue updated!",
             data: venue
         })
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -275,13 +262,13 @@ module.exports.deleteVenue = async function(req, res){
         await db.Venue.destroy({where: {id: id}})
         return res.status(200).json({
             success: true,
-            messages: "Delete success!"
+            message: "Delete success!"
         })
     }catch(error){
         console.log(error);
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }

@@ -31,15 +31,13 @@ module.exports.login = async function(req, res){
             });
         }
         return res.status(400).json({
-            errors: {
-                attribute: "Authentication",
-                message: "Email is not registered",
-            },
+            success: false,
+            message: "Email is not registered"
         });
     }catch(error){
         return res.status(400).json({
             success: false,
-            errors: error.message
+            message: error.message
         });
     }
 }
@@ -54,7 +52,7 @@ module.exports.getVenue = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -69,7 +67,7 @@ module.exports.getVenueNotVerified = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -98,7 +96,7 @@ module.exports.getDetailVenue = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -123,7 +121,7 @@ module.exports.venueVerification = async function(req, res){
             if(findVenue.is_verified == true){
                 return res.status(400).json({
                     success:false,
-                    messages: "This venue is already verified"
+                    message: "This venue is already verified"
                 })
             }
             findVenue.update({
@@ -152,7 +150,7 @@ module.exports.venueVerification = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -177,7 +175,7 @@ module.exports.blockVenue = async function(req, res){
     }catch(error){
         return res.status(400).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
@@ -192,7 +190,7 @@ module.exports.getUser = async function(req, res){
     }catch(error){
         return res.status(200).json({
             success:false,
-            errors: error.message
+            message: error.message
         })
     }
 }
