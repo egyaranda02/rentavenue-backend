@@ -20,7 +20,8 @@ module.exports.login = async function(req, res){
                     success: true,
                     message: "Login Success",
                     data: {
-                        email: admin.email
+                        email: admin.email,
+                        token: token
                     }
                 });
             }

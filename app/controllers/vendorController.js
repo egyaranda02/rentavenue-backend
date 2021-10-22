@@ -56,12 +56,19 @@ module.exports.register = async function(req,res){
     const{
         email,
         password,
+        confirm_password,
         vendor_name,
         address,
         phone_number,
         description
     } = req.body;
     try{
+        if(password !== confirm_password){
+            return res.status(400).json({
+                success: false,
+                messages: "Password and confirm password is not the same"
+            });
+        }
         const findEmailUser = await db.User.findOne({where: {email: email}});
         const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
         if(findEmailUser || findEmailVendor){
@@ -178,7 +185,8 @@ module.exports.login = async function(req, res){
                     message: "Login Success",
                     data: {
                         vendor_name: vendor.vendor_name,
-                        email: vendor.email
+                        email: vendor.email,
+                        token: token
                     }
                 });
             }
