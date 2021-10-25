@@ -44,6 +44,12 @@ module.exports.createTransaction = async function(req, res){
         const UserId = decoded.UserId;
         const user = await db.User.findByPk(UserId);
         const venue = await db.Venue.findByPk(VenueId);
+        if(venue.is_verified != true){
+            return res.status(200).json({
+                success: false,
+                message: "Venue is not verified"
+            });
+        }
         // Check book on venue
         const venueBook = await db.Transaction.findOne({
             where: {
