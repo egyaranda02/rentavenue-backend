@@ -1,7 +1,8 @@
 const db = require("../models/index.js");
-const { Op } = require("sequelize");
+const { Op, Transaction } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+const moment = require('moment');
 const { sequelize } = require("../models/index.js");
 require("dotenv").config({ path: "./.env" });
 
@@ -43,12 +44,39 @@ module.exports.getDetailVenue = async function(req, res){
 module.exports.searchVenue = async function(req, res){
     try{
         const findVenue = await db.Venue.findAll({ where: {
-            [Op.or]: [
-                { name: { [Op.iLike]: `%${req.query.query_string}%` } },
-                { city: { [Op.iLike]: `%${req.query.query_string}%` } }
+            [Op.and]: [
+                { capacity: { [Op.gte]: req.query.capacity } },
+                { city: { [Op.iLike]: `%${req.query.city}%` } },
             ],
             is_verified: true
-        }})
+        }, 
+        include: {
+            model: db.Transaction,
+            attributes: [
+                'start_book', 'finish_book'
+            ]
+        }
+        })
+        function filterDate(array) {
+            for(let i=0; i<array.length; i++){
+                console.log("Function")
+                array[i].Transactions.map(transaction=>{
+                    console.log(transaction.start_book);
+                    if(moment(req.query.start_book).isBetween(transaction.start_book, transaction.finish_book) || 
+                    moment(req.query.start_book).isSame(transaction.start_book) ||
+                    moment(req.query.start_book).isSame(transaction.finish_book) ||
+                    moment(req.query.finish_book).isSame(transaction.start_book) ||
+                    moment(req.query.finish_book).isSame(transaction.finish_book) ||
+                    moment(req.query.finish_book).isBetween(transaction.start_book, transaction.finish_book)||
+                    (moment(req.query.start_book).isSameOrBefore(transaction.start_book) && moment(req.query.finish_book).isSameOrAfter(transaction.finish_book))){
+                        array.splice(i,1);
+                        console.log("Object deleted")
+                    }
+                })
+            }
+            
+        }
+        filterDate(findVenue);
         return res.status(200).json({
             success:true,
             data: findVenue
