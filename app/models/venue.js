@@ -23,7 +23,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     capacity: {
       type: DataTypes.INTEGER,
@@ -31,7 +34,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     price: {
       type: DataTypes.INTEGER,
@@ -39,19 +45,31 @@ module.exports = (sequelize, DataTypes) => {
     },
     city: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     address: {
       type: DataTypes.TEXT,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     longitude: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     latitude: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     is_verified: {
       type: DataTypes.BOOLEAN,

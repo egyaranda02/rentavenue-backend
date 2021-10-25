@@ -21,30 +21,45 @@ module.exports = (sequelize, DataTypes) => {
       allowNull:false,
       unique: true,
       validate: {
-        isEmail: true
+        isEmail: true,
+        notEmpty: true
       }
     },
     password: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        len: [6],
+        notEmpty: true
+      }
     },
     firstName: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     lastName: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     gender: {
       type: DataTypes.STRING,
-      allowNull:false
+      allowNull:false,
+      validate:{
+        notEmpty: true
+      }
     },
     phone_number: {
       type: DataTypes.STRING,
       allowNull:false,
       validate: {
-        isNumeric:true
+        isNumeric:true,
+        notEmpty: true
       }
     },
     profile_picture: {
