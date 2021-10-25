@@ -17,13 +17,13 @@ module.exports.createTransaction = async function(req, res){
     if(moment(start_book).isBefore(now)){
         return res.status(400).json({
             success: false,
-            errors: "Can't book days in the past"
+            message: "Can't book days in the past"
         });
     }
     if(moment(finish_book).isBefore(start_book)){
         return res.status(400).json({
             success: false,
-            errors: "Error input book time"
+            message: "Error input book time"
         });
     }
     
@@ -74,9 +74,9 @@ module.exports.createTransaction = async function(req, res){
         })
         console.log(venueBook);
         if(venueBook){
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
-                errors: "Date is taken"
+                message: "Date is taken"
             });
         }
         const total_payment = venue.price * diffDays;
@@ -119,34 +119,72 @@ module.exports.createTransaction = async function(req, res){
 
             let transactionRedirectUrl = trade.redirect_url;
             console.log('transactionRedirectUrl:',transactionRedirectUrl);
-        })
-        return res.status(200).json({
-            data: transaction
+            return res.status(200).json({
+                data: transaction,
+                redirect_url: transactionRedirectUrl
+            })
         })
     }catch(error){
         return res.status(400).json({
             success: false,
-            errors: error.message,
+            message: error.message,
         });
     }
 
 }
 
 module.exports.MidtransNotification = async function(req,res){
-    const {
-        transaction_status,
-        signature_key,
-        order_id
-    } = req.body
-    try{
-        const transaction = db.Transaction.findByPk(order_id);
-        transaction.update({
-            status: transaction_status
-        })
-    }catch(error){
-        return res.status(400).json({
-            success: false,
-            errors: error.message,
-        });
-    }
+    let apiClient = new midtransClient.Snap({
+        isProduction : false,
+        serverKey : process.env.MIDTRANS_SERVER_KEY,
+        clientKey : process.env.MIDTRANS_CLIENT_KEY
+    });
+
+    apiClient.transaction.notification(req)
+    .then((statusResponse)=>{
+        let orderId = statusResponse.order_id;
+        let transactionStatus = statusResponse.transaction_status;
+        let fraudStatus = statusResponse.fraud_status;
+
+        const transaction = db.Transaction.findByPk(orderId);
+
+        console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
+
+        // Sample transactionStatus handling logic
+        if (transactionStatus == 'capture'){
+            transaction.update({
+                payment_status: "capture"
+            })
+            return res.status(200).json({
+                success: true,
+                message: "Payment received"
+            })
+        } else if (transactionStatus == 'settlement'){
+            transaction.update({
+                payment_status: "settlement"
+            })
+            return res.status(200).json({
+                success: true,
+                message: "Payment received"
+            })
+        } else if (transactionStatus == 'cancel' ||
+            transactionStatus == 'deny' ||
+            transactionStatus == 'expire'){
+                transaction.update({
+                    payment_status: "Failed"
+                })
+                return res.status(200).json({
+                    success: true,
+                    message: "Transaction Failed"
+                })
+        } else if (transactionStatus == 'pending'){
+            transaction.update({
+                payment_status: "pending"
+            })
+            return res.status(200).json({
+                success: true,
+                message: "Payment pending"
+            })
+        }
+    });
 }

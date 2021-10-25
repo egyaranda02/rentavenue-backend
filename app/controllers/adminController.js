@@ -25,12 +25,12 @@ module.exports.login = async function(req, res){
                     }
                 });
             }
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "Email and password didn't match",
             });
         }
-        return res.status(400).json({
+        return res.status(200).json({
             success: false,
             message: "Email is not registered"
         });
@@ -112,14 +112,14 @@ module.exports.venueVerification = async function(req, res){
             })
         }
         if(!respond){
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "please enter a respond"
             })
         }
         if(respond == "accept"){
             if(findVenue.is_verified == true){
-                return res.status(400).json({
+                return res.status(200).json({
                     success:false,
                     message: "This venue is already verified"
                 })
@@ -142,7 +142,7 @@ module.exports.venueVerification = async function(req, res){
                 message: "Venue rejected"
             })
         }
-        return res.status(400).json({
+        return res.status(200).json({
             success: false,
             message: "please enter a correct respond"
         })

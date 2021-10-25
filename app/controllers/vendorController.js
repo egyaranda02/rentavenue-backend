@@ -64,7 +64,7 @@ module.exports.register = async function(req,res){
     } = req.body;
     try{
         if(password !== confirm_password){
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "Password and confirm password is not the same"
             });
@@ -72,7 +72,7 @@ module.exports.register = async function(req,res){
         const findEmailUser = await db.User.findOne({where: {email: email}});
         const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
         if(findEmailUser || findEmailVendor){
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "Email has been used"
             });
@@ -108,7 +108,7 @@ module.exports.register = async function(req,res){
         smtpTransport.sendMail(mailOptions, function (error, response) {
             if (error) {
                 console.log(error);
-                return res.status(400).json({
+                return res.status(200).json({
                     success: false,
                     message: "Failed to send email",
                 });
@@ -153,7 +153,7 @@ module.exports.verification = async function(req, res){
                 message: "Email verification success",
             });
         }
-        return res.status(404).json({
+        return res.status(200).json({
             success: false,
             message: "Token not found",
         });
@@ -170,7 +170,7 @@ module.exports.login = async function(req, res){
         const vendor = await db.Vendor.findOne({where: {email: req.body.email}});
         if(vendor){
             if(vendor.is_verified == false){
-                return res.status(401).json({
+                return res.status(200).json({
                     success:false, 
                     message: "Please activate your email first"
                 });
@@ -189,12 +189,12 @@ module.exports.login = async function(req, res){
                     }
                 });
             }
-            return res.status(401).json({
+            return res.status(200).json({
                 success: false,
                 message: "Email and password didn't match",
             });
         }
-        res.status(404).json({
+        res.status(200).json({
             success: false,
             message: "Email is not registered"
         });
@@ -224,7 +224,7 @@ module.exports.editVendor = async function(req, res){
     }
     // Require password for edit profile
     if (password == null) {
-        return res.status(400).json({
+        return res.status(200).json({
             success: false,
             message: "Please enter the password",
         });
@@ -238,7 +238,7 @@ module.exports.editVendor = async function(req, res){
     // compare password
     const comparePassword = bcrypt.compareSync(password, findVendor.password);
     if(!comparePassword){
-        return res.status(401).json({
+        return res.status(200).json({
             success: false,
             message: "Wrong Password!",
         });

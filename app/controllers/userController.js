@@ -54,7 +54,7 @@ module.exports.register = async function(req, res){
     } = req.body;
     try{
         if(password !== confirm_password){
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "Password and confirm password is not the same"
             });
@@ -62,7 +62,7 @@ module.exports.register = async function(req, res){
         const findEmailUser = await db.User.findOne({where: {email: email}});
         const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
         if(findEmailUser || findEmailVendor){
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "Email has been used"
             });
@@ -98,7 +98,7 @@ module.exports.register = async function(req, res){
         smtpTransport.sendMail(mailOptions, function (error, response) {
             if (error) {
                 console.log(error);
-                return res.status(400).json({
+                return res.status(200).json({
                     success: false,
                     message: "Failed to send email"
                 });
@@ -141,7 +141,7 @@ module.exports.verification = async function(req, res){
                 message: "Email verification success",
             });
         }else{
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: "Token not found",
             });
@@ -159,7 +159,7 @@ module.exports.login = async function(req, res){
         const user = await db.User.findOne({ where: {email: req.body.email} });
         if(user){
             if(user.is_verified == false){
-                return res.status(400).json({
+                return res.status(200).json({
                     succes: false,
                     message: "Please verify you email first"
                 });
@@ -179,7 +179,7 @@ module.exports.login = async function(req, res){
                     }
                 });
             }
-            return res.status(401).json({
+            return res.status(200).json({
                 success: false,
                 message: "Email and password didn't match",
             });
@@ -207,7 +207,7 @@ module.exports.editUser = async function(req,res){
     const findUser = await db.User.findByPk(req.params.id);
     // Password required
     if (password == null) {
-        return res.status(400).json({
+        return res.status(200).json({
             success: false,
             message: "Please enter the password",
         });
@@ -221,7 +221,7 @@ module.exports.editUser = async function(req,res){
     const comparePassword = bcrypt.compareSync(password, findUser.password);
     // If password false
     if (!comparePassword) {
-        return res.status(401).json({
+        return res.status(200).json({
             success: false,
             message: "Wrong Password!",
         });

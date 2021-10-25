@@ -113,7 +113,7 @@ module.exports.Create = async function(req, res){
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
         const VendorId = decoded.VendorId;
         if(VendorId == null){
-            return res.status(401).json({
+            return res.status(200).json({
                 succes: false,
                 message: "You are not a vendor"
             });
