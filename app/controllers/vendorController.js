@@ -282,3 +282,87 @@ module.exports.logout = (req, res) => {
         message: "Logout Success",
     });
 };
+
+// Venue for Vendor
+
+module.exports.getVenueVerified = async function(req, res){
+    try{
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if(decoded.VendorId != req.params.id){
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const verifiedVenue = await db.Venue.findAll({
+            where: {
+                VendorId: req.params.id,
+                is_verified: true
+            }, include:[
+                {
+                    model: db.Venue_Photo,
+                    attributes: {
+                        exclude: ['VenueId', 'createdAt', 'updatedAt']
+                    }
+                },
+                {
+                    model: db.Document,
+                    attributes: {
+                        exclude: ['VenueId', 'createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        })
+        return res.status(401).json({
+            success: true,
+            data: verifiedVenue
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+module.exports.getVenueNotVerified = async function(req, res){
+    try{
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if(decoded.VendorId != req.params.id){
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const notVerifiedVenue = await db.Venue.findAll({
+            where: {
+                VendorId: req.params.id,
+                is_verified: false
+            }, include:[
+                {
+                    model: db.Venue_Photo,
+                    attributes: {
+                        exclude: ['VenueId', 'createdAt', 'updatedAt']
+                    }
+                },
+                {
+                    model: db.Document,
+                    attributes: {
+                        exclude: ['VenueId', 'createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        })
+        return res.status(401).json({
+            success: true,
+            data: notVerifiedVenue
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
