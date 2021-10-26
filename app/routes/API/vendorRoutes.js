@@ -31,6 +31,8 @@ const upload = multer({
 vendorRouter.post('/register', vendorController.register);
 vendorRouter.get('/:id/venue/verified', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getVenueVerified)
 vendorRouter.get('/:id/venue/notverified', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getVenueNotVerified)
+vendorRouter.get('/:id/transaction/pending', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getVendorTransactionPending)
+vendorRouter.get('/:id/transaction/success', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getVendorTransactionSuccess)
 vendorRouter.patch('/:id', authMiddleware.checkLogin, upload.single('profile_picture'), vendorController.editVendor);
 vendorRouter.get('/verify', vendorController.verification);
 vendorRouter.get('/:id', vendorController.getVendorDetails);

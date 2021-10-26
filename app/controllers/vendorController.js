@@ -366,3 +366,76 @@ module.exports.getVenueNotVerified = async function(req, res){
         });
     }
 }
+
+// transaction
+module.exports.getVendorTransactionPending = async function(req,res){
+    try{
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if(decoded.VendorId != req.params.id){
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const pendingTransaction = await db.Transaction.findAll({
+            where: {
+                payment_status: 'pending'
+            }, include:[
+                {
+                    model: db.Venue,
+                    where: {VendorId: req.params.id}
+                }
+            ]
+        })
+        return res.status(401).json({
+            success: true,
+            data: pendingTransaction
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+module.exports.getVendorTransactionSuccess = async function(req,res){
+    try{
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if(decoded.VendorId != req.params.id){
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const successTransaction = await db.Transaction.findAll({
+            where: {
+                payment_status: {
+                    [Op.or]: ['settlement', 'capture']
+                }
+            }, include: [
+                {
+                    model: db.Checkin_Status,
+                    attributes: {
+                        exclude: ['checkin_code','checkout_code','TransactionId', 'createdAt', 'updatedAt']
+                    }
+                },
+                {
+                    model: db.Venue,
+                    where: {VendorId: req.params.id}
+                }
+            ]
+        })
+        return res.status(401).json({
+            success: true,
+            data: successTransaction
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
