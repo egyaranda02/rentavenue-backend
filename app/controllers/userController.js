@@ -266,3 +266,99 @@ module.exports.logout = (req, res) => {
         message: "Logout Success",
     });
 };
+
+// Transaction
+module.exports.getUserTransactionPending = async function(req,res){
+    try{
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if(decoded.UserId != req.params.id){
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const pendingTransaction = await db.Transaction.findAll({
+            where: {
+                UserId: req.params.id,
+                payment_status: 'pending'
+            }
+        })
+        return res.status(401).json({
+            success: true,
+            data: pendingTransaction
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+module.exports.getUserTransactionSuccess = async function(req,res){
+    try{
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if(decoded.UserId != req.params.id){
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const successTransaction = await db.Transaction.findAll({
+            where: {
+                UserId: req.params.id,
+                payment_status: {
+                    [Op.or]: ['settlement', 'capture']
+                }
+            }, include: [
+                {
+                    model: db.Checkin_Status,
+                    attributes: {
+                        exclude: ['TransactionId', 'createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        })
+        return res.status(401).json({
+            success: true,
+            data: successTransaction
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+module.exports.getUserTransactionFail = async function(req,res){
+    try{
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if(decoded.UserId != req.params.id){
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const failedTransaction = await db.Transaction.findAll({
+            where: {
+                UserId: req.params.id,
+                payment_status: {
+                    [Op.or]: ['expired', 'Failed']
+                }
+            }
+        })
+        return res.status(401).json({
+            success: true,
+            data: failedTransaction
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
