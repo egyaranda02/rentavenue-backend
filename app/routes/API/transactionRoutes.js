@@ -7,7 +7,6 @@ const authMiddleware = require('../../middleware/authMiddleware');
 const transactionController = require('../../controllers/transactionController');
 
 transactionRouter.post('/', transactionController.createTransaction);
-transactionRouter.post('/midtrans/', transactionController.MidtransNotification);
-
+transactionRouter.post('/midtrans/notification', transactionController.MidtransNotification);
 
 module.exports= transactionRouter;

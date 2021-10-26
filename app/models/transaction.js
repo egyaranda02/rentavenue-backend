@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Transaction.belongsTo(models.Venue)
       Transaction.belongsTo(models.User)
+      Transaction.hasOne(models.Checkin_Status)
     }
   };
   Transaction.init({
@@ -42,7 +43,11 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING,
       defaultValue: "pending"
+    },
+    expiredAt: {
+      type: DataTypes.DATE
     }
+
   }, {
     sequelize,
     modelName: 'Transaction',

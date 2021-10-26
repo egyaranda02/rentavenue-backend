@@ -2,6 +2,7 @@ const db = require("../models/index.js");
 const { Op } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+const {nanoid} = require('nanoid');
 const moment = require('moment');
 const { sequelize } = require("../models/index.js");
 require("dotenv").config({ path: "./.env" });
@@ -78,7 +79,6 @@ module.exports.createTransaction = async function(req, res){
                 ]
             }
         })
-        console.log(venueBook);
         if(venueBook){
             return res.status(200).json({
                 success: false,
@@ -86,13 +86,15 @@ module.exports.createTransaction = async function(req, res){
             });
         }
         const total_payment = venue.price * diffDays;
+        const expiredAt = moment().add(1, 'hours');
 
         const transaction = await db.Transaction.create({
             UserId,
             VenueId,
             start_book,
             finish_book,
-            total_payment
+            total_payment,
+            expiredAt
         })
 
         let midtransParam = {
@@ -140,34 +142,103 @@ module.exports.createTransaction = async function(req, res){
 }
 
 module.exports.MidtransNotification = async function(req,res){
-    let apiClient = new midtransClient.Snap({
-        isProduction : false,
-        serverKey : process.env.MIDTRANS_SERVER_KEY,
-        clientKey : process.env.MIDTRANS_CLIENT_KEY
-    });
+    // let apiClient = new midtransClient.Snap({
+    //     isProduction : false,
+    //     serverKey : process.env.MIDTRANS_SERVER_KEY,
+    //     clientKey : process.env.MIDTRANS_CLIENT_KEY
+    // });
 
-    apiClient.transaction.notification(req)
-    .then((statusResponse)=>{
-        let orderId = statusResponse.order_id;
-        let transactionStatus = statusResponse.transaction_status;
-        let fraudStatus = statusResponse.fraud_status;
+    // apiClient.transaction.notification(req)
+    // .then(async (statusResponse)=>{
+    //     let orderId = statusResponse.order_id;
+    //     let transactionStatus = statusResponse.transaction_status;
+    //     let fraudStatus = statusResponse.fraud_status;
 
-        const transaction = db.Transaction.findByPk(orderId);
+    //     const transaction = db.Transaction.findByPk(orderId);
 
-        console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
+    //     console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
 
-        // Sample transactionStatus handling logic
+    //     // Sample transactionStatus handling logic
+    //     if (transactionStatus == 'capture'){
+    //         await db.Checkin_Status.create({
+    //             TransactionId: TransactionId,
+    //             checkin_code: uniqueId()
+    //         })
+    //         await transaction.update({
+    //             payment_status: "capture",
+    //             expiredAt: null
+    //         })
+    //         return res.status(200).json({
+    //             success: true,
+    //             message: "Payment received"
+    //         })
+    //     } else if (transactionStatus == 'settlement'){
+    //         await db.Checkin_Status.create({
+    //             TransactionId,
+    //             uniqueId
+    //         })
+    //         await transaction.update({
+    //             payment_status: "settlement",
+    //             expiredAt: null
+    //         })
+    //         return res.status(200).json({
+    //             success: true,
+    //             message: "Payment received"
+    //         })
+    //     } else if (transactionStatus == 'cancel' ||
+    //         transactionStatus == 'deny' ||
+    //         transactionStatus == 'expire'){
+    //             transaction.update({
+    //                 payment_status: "Failed",
+    //                 expiredAt: null
+    //             })
+    //             return res.status(200).json({
+    //                 success: true,
+    //                 message: "Transaction Failed"
+    //             })
+    //     } else if (transactionStatus == 'pending'){
+    //         transaction.update({
+    //             payment_status: "pending"
+    //         })
+    //         return res.status(200).json({
+    //             success: true,
+    //             message: "Payment pending"
+    //         })
+    //     }
+    // });
+
+    let{
+        orderId,
+        transactionStatus,
+        fraudStatus 
+    } = req.body
+
+    const transaction = await db.Transaction.findByPk(orderId);
+    const TransactionId = orderId;
+
+    const checkin_code = nanoid(8);
+    try{
         if (transactionStatus == 'capture'){
-            transaction.update({
-                payment_status: "capture"
+            await db.Checkin_Status.create({
+                TransactionId: TransactionId,
+                checkin_code: checkin_code
+            })
+            await transaction.update({
+                payment_status: "capture",
+                expiredAt: null
             })
             return res.status(200).json({
                 success: true,
                 message: "Payment received"
             })
         } else if (transactionStatus == 'settlement'){
-            transaction.update({
-                payment_status: "settlement"
+            await db.Checkin_Status.create({
+                TransactionId: TransactionId,
+                checkin_code: checkin_code
+            })
+            await transaction.update({
+                payment_status: "settlement",
+                expiredAt: null
             })
             return res.status(200).json({
                 success: true,
@@ -176,15 +247,16 @@ module.exports.MidtransNotification = async function(req,res){
         } else if (transactionStatus == 'cancel' ||
             transactionStatus == 'deny' ||
             transactionStatus == 'expire'){
-                transaction.update({
-                    payment_status: "Failed"
+                await transaction.update({
+                    payment_status: "Failed",
+                    expiredAt: null
                 })
                 return res.status(200).json({
                     success: true,
                     message: "Transaction Failed"
                 })
         } else if (transactionStatus == 'pending'){
-            transaction.update({
+            await transaction.update({
                 payment_status: "pending"
             })
             return res.status(200).json({
@@ -192,5 +264,11 @@ module.exports.MidtransNotification = async function(req,res){
                 message: "Payment pending"
             })
         }
-    });
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+    
 }
