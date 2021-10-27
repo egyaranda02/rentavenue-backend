@@ -147,7 +147,7 @@ module.exports.MidtransNotification = async function(req,res){
     //     serverKey : process.env.MIDTRANS_SERVER_KEY,
     //     clientKey : process.env.MIDTRANS_CLIENT_KEY
     // });
-
+    // const checkin_code = nanoid(8);
     // apiClient.transaction.notification(req)
     // .then(async (statusResponse)=>{
     //     let orderId = statusResponse.order_id;
@@ -158,12 +158,12 @@ module.exports.MidtransNotification = async function(req,res){
 
     //     console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
 
-    //     // Sample transactionStatus handling logic
-    //     if (transactionStatus == 'capture'){
-    //         await db.Checkin_Status.create({
-    //             TransactionId: TransactionId,
-    //             checkin_code: uniqueId()
-    //         })
+        // Sample transactionStatus handling logic
+            // if (transactionStatus == 'capture'){
+            //     await db.Checkin_Status.create({
+            //         TransactionId: TransactionId,
+            //         checkin_code: checkin_code
+            //     })
     //         await transaction.update({
     //             payment_status: "capture",
     //             expiredAt: null
@@ -175,7 +175,7 @@ module.exports.MidtransNotification = async function(req,res){
     //     } else if (transactionStatus == 'settlement'){
     //         await db.Checkin_Status.create({
     //             TransactionId,
-    //             uniqueId
+    //              checkin_code: checkin_code
     //         })
     //         await transaction.update({
     //             payment_status: "settlement",
