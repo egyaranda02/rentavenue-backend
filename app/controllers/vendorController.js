@@ -178,7 +178,7 @@ module.exports.login = async function(req, res){
             const passwordAuth = bcrypt.compareSync(req.body.password, vendor.password);
             if(passwordAuth){
                 const token = await jwt.sign({VendorId: vendor.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
-                res.cookie("jwt", token, { maxAge: 60*60*1000, sameSite: 'none', secure: true });
+                res.cookie("jwt", token, { maxAge: 60*60*1000, httpOnly: true, secure: false})
                 return res.status(200).json({
                     success: true,
                     message: "Login Success",

@@ -28,12 +28,19 @@ const task = cron.schedule('* * * * *', async () => {
     })
 });
 
+const corsOptions = {
+    origin: "http://localhost:3000",
+    credentials: true, //access-control-allow-credentials:true
+    optionSuccessStatus: 200,
+}
 
-app.use(cookieParser());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({credentials: true,  origin: "http://localhost:3000"}));
 
+
+
+app.use(cookieParser());
 app.get('/', (req, res) => res.send('Hello World!'))
 app.use("/api", apiRoutes);
 task.start();
