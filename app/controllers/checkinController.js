@@ -74,3 +74,68 @@ module.exports.CheckIn = async function (req, res){
         });
     }
 }
+
+module.exports.Checkout = async function(req, res){
+    const{
+        checkout_code
+    } = req.body;
+    const token = req.cookies.jwt;
+    try{
+        const decoded = await jwt.verify(token, process.env.SECRET_KEY);
+        const now = moment();
+        const checkin_status = await db.Checkin_Status.findOne(
+            {
+                where : {
+                    checkout_code: checkout_code
+                }
+                , include: [
+                    {
+                        model: db.Transaction,
+                        attributes: {
+                            exclude: ['createdAt', 'updatedAt']
+                        },
+                        include: [
+                            {
+                                model: db.Venue,
+                                attributes: {
+                                    exclude: ['createdAt', 'updatedAt']
+                                },
+                            }
+                        ]
+                    }
+                ]
+            }
+        )
+        if(!checkin_status){
+            return res.status(200).json({
+                success: false,
+                message: "Invalid Booking Code"
+            })
+        }
+        if (checkin_status.Transaction.Venue.VendorId != decoded.VendorId){
+            return res.status(200).json({
+                success: false,
+                message: "Error authorization"
+            })
+        }
+        if(moment(now).isBefore(checkin_status.Transaction.start_book, 'day')||moment(now).isAfter(checkin_status.Transaction.finish_book, 'day')){
+            return res.status(200).json({
+                success: false,
+                message: "Please checkOut at the right time"
+            })
+        }
+        await checkin_status.update({
+            checkout_code: null,
+            checkout_time: now,
+        })
+        return res.status(200).json({
+            success: true,
+            message: "Checkout Success"
+        })
+    }catch(error){
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
