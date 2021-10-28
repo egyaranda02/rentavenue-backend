@@ -32,7 +32,7 @@ const task = cron.schedule('* * * * *', async () => {
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({credentials: true,  origin: "http://localhost:3000"}));
 
 app.get('/', (req, res) => res.send('Hello World!'))
 app.use("/api", apiRoutes);
