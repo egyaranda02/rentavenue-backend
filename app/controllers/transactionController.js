@@ -55,6 +55,9 @@ module.exports.createTransaction = async function(req, res){
         const venueBook = await db.Transaction.findOne({
             where: {
                 VenueId: VenueId,
+                payment_status:{
+                    [Op.not]: ["expired", "Failed"]
+                },
                 [Op.or]: [
                         {[Op.and] : {
                             start_book: {
