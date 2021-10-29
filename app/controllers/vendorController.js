@@ -183,6 +183,7 @@ module.exports.login = async function(req, res){
                     success: true,
                     message: "Login Success",
                     data: {
+                        VendorId: vendor.id,
                         vendor_name: vendor.vendor_name,
                         email: vendor.email,
                         token: token

@@ -172,6 +172,7 @@ module.exports.login = async function(req, res){
                     success: true,
                     message: "Login Success",
                     data: {
+                        UserId: user.id,
                         firstName: user.firstName,
                         lastName: user.lastName,
                         email: user.email,
