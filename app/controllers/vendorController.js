@@ -305,12 +305,6 @@ module.exports.getVenueVerified = async function(req, res){
                     attributes: {
                         exclude: ['VenueId', 'createdAt', 'updatedAt']
                     }
-                },
-                {
-                    model: db.Document,
-                    attributes: {
-                        exclude: ['VenueId', 'createdAt', 'updatedAt']
-                    }
                 }
             ]
         })
@@ -343,12 +337,6 @@ module.exports.getVenueNotVerified = async function(req, res){
             }, include:[
                 {
                     model: db.Venue_Photo,
-                    attributes: {
-                        exclude: ['VenueId', 'createdAt', 'updatedAt']
-                    }
-                },
-                {
-                    model: db.Document,
                     attributes: {
                         exclude: ['VenueId', 'createdAt', 'updatedAt']
                     }
