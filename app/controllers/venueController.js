@@ -7,8 +7,21 @@ const { sequelize } = require("../models/index.js");
 require("dotenv").config({ path: "./.env" });
 
 
-module.exports.detailedSearch = async function(req, res){
-
+module.exports.getAll = async function(req, res){
+    try{
+        const findVenue = await db.Venue.findAll({
+            where: {is_verified: true}
+        });
+        return res.status(200).json({
+            success: true,
+            data: findVenue
+        })
+    }catch(error){
+        return res.status(400).json({
+            success:false,
+            message: error.message
+        })
+    }
 }
 
 module.exports.getDetailVenue = async function(req, res){

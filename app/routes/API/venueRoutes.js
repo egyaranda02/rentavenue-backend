@@ -32,6 +32,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
+venueRouter.get('/', venueController.getAll);
 venueRouter.get('/city', venueController.getCity);
 venueRouter.get('/city/:city', venueController.getVenueByCity);
 venueRouter.get('/search', venueController.searchVenue);
