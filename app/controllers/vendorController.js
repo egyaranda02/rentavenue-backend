@@ -309,7 +309,7 @@ module.exports.getVenueVerified = async function(req, res){
                 }
             ]
         })
-        return res.status(401).json({
+        return res.status(200).json({
             success: true,
             data: verifiedVenue
         })
@@ -344,7 +344,7 @@ module.exports.getVenueNotVerified = async function(req, res){
                 }
             ]
         })
-        return res.status(401).json({
+        return res.status(200).json({
             success: true,
             data: notVerifiedVenue
         })
