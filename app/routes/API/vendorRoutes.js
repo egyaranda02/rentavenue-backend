@@ -7,18 +7,18 @@ const authMiddleware = require('../../middleware/authMiddleware');
 const vendorController = require('../../controllers/vendorController');
 
 const storage = multer.diskStorage({
-    destination: function(req, file, next){
+    destination: function (req, file, next) {
         next(null, 'assets/vendor/profile_picture');
     },
-    filename: function(req, file, next){
+    filename: function (req, file, next) {
         next(null, uuid.v4() + path.extname(file.originalname));
     }
 });
 
-const fileFilter = (req, file, next)=>{
-    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg'){
+const fileFilter = (req, file, next) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
         next(null, true);
-    }else{
+    } else {
         next(new Error('Please only upload jpeg, jpg, and png'), false);
     }
 };
