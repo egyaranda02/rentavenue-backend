@@ -2,50 +2,50 @@ const db = require("../models/index.js");
 const { Op } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const {nanoid} = require('nanoid');
+const { nanoid } = require('nanoid');
 const moment = require('moment');
 const { sequelize } = require("../models/index.js");
 require("dotenv").config({ path: "./.env" });
 const midtransClient = require('midtrans-client');
 
-module.exports.createTransaction = async function(req, res){
-    const{
+module.exports.createTransaction = async function (req, res) {
+    const {
         VenueId,
         start_book,
         finish_book,
     } = req.body
     const now = moment();
-    if(moment(start_book).isBefore(now)){
-        return res.status(400).json({
+    if (moment(start_book).isBefore(now)) {
+        return res.status(200).json({
             success: false,
             message: "Can't book days in the past"
         });
     }
-    if(moment(finish_book).isBefore(start_book)){
-        return res.status(400).json({
+    if (moment(finish_book).isBefore(start_book)) {
+        return res.status(200).json({
             success: false,
             message: "Error input book time"
         });
     }
-    
+
     let snap = new midtransClient.Snap({
         // Set to true if you want Production Environment (accept real transaction).
-        isProduction : false,
-        serverKey : process.env.MIDTRANS_SERVER_KEY
+        isProduction: false,
+        serverKey: process.env.MIDTRANS_SERVER_KEY
     });
 
-    try{
+    try {
         const date1 = new Date(start_book);
         const date2 = new Date(finish_book);
         const diffTime = Math.abs(date2 - date1);
-        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         diffDays += 1;
         const token = req.cookies.jwt;
         const decoded = await jwt.verify(token, process.env.SECRET_KEY);
         const UserId = decoded.UserId;
         const user = await db.User.findByPk(UserId);
         const venue = await db.Venue.findByPk(VenueId);
-        if(venue.is_verified != true){
+        if (venue.is_verified != true) {
             return res.status(200).json({
                 success: false,
                 message: "Venue is not verified"
@@ -55,34 +55,40 @@ module.exports.createTransaction = async function(req, res){
         const venueBook = await db.Transaction.findOne({
             where: {
                 VenueId: VenueId,
-                payment_status:{
+                payment_status: {
                     [Op.not]: ["expired", "Failed"]
                 },
                 [Op.or]: [
-                        {[Op.and] : {
+                    {
+                        [Op.and]: {
                             start_book: {
                                 [Op.lte]: start_book
                             },
-                            finish_book:{
+                            finish_book: {
                                 [Op.gte]: finish_book
                             }
-                        }},
-                        {start_book: {
-                            [Op.between]:[
+                        }
+                    },
+                    {
+                        start_book: {
+                            [Op.between]: [
                                 start_book,
                                 finish_book
                             ]
-                        }},
-                        {finish_book: {
-                            [Op.between]:[
+                        }
+                    },
+                    {
+                        finish_book: {
+                            [Op.between]: [
                                 start_book,
                                 finish_book
                             ]
-                        }}
+                        }
+                    }
                 ]
             }
         })
-        if(venueBook){
+        if (venueBook) {
             return res.status(200).json({
                 success: false,
                 message: "Date is taken"
@@ -104,7 +110,7 @@ module.exports.createTransaction = async function(req, res){
             "transaction_details": {
                 "order_id": transaction.id,
                 "gross_amount": total_payment
-            },"item_details": [
+            }, "item_details": [
                 {
                     "id": venue.id,
                     "price": venue.price,
@@ -120,22 +126,22 @@ module.exports.createTransaction = async function(req, res){
             }
         }
         await snap.createTransaction(midtransParam)
-        .then((trade)=>{
-            // transaction token
-            let transactionToken = trade.token;
-            transaction.update({
-                token: transactionToken
-            })
-            console.log('transactionToken:',transactionToken);
+            .then((trade) => {
+                // transaction token
+                let transactionToken = trade.token;
+                transaction.update({
+                    token: transactionToken
+                })
+                console.log('transactionToken:', transactionToken);
 
-            let transactionRedirectUrl = trade.redirect_url;
-            console.log('transactionRedirectUrl:',transactionRedirectUrl);
-            return res.status(200).json({
-                data: transaction,
-                redirect_url: transactionRedirectUrl
+                let transactionRedirectUrl = trade.redirect_url;
+                console.log('transactionRedirectUrl:', transactionRedirectUrl);
+                return res.status(200).json({
+                    data: transaction,
+                    redirect_url: transactionRedirectUrl
+                })
             })
-        })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message,
@@ -144,7 +150,7 @@ module.exports.createTransaction = async function(req, res){
 
 }
 
-module.exports.MidtransNotification = async function(req,res){
+module.exports.MidtransNotification = async function (req, res) {
     // let apiClient = new midtransClient.Snap({
     //     isProduction : false,
     //     serverKey : process.env.MIDTRANS_SERVER_KEY,
@@ -161,12 +167,12 @@ module.exports.MidtransNotification = async function(req,res){
 
     //     console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
 
-        // Sample transactionStatus handling logic
-            // if (transactionStatus == 'capture'){
-            //     await db.Checkin_Status.create({
-            //         TransactionId: TransactionId,
-            //         checkin_code: checkin_code
-            //     })
+    // Sample transactionStatus handling logic
+    // if (transactionStatus == 'capture'){
+    //     await db.Checkin_Status.create({
+    //         TransactionId: TransactionId,
+    //         checkin_code: checkin_code
+    //     })
     //         await transaction.update({
     //             payment_status: "capture",
     //             expiredAt: null
@@ -210,18 +216,18 @@ module.exports.MidtransNotification = async function(req,res){
     //     }
     // });
 
-    let{
+    let {
         orderId,
         transactionStatus,
-        fraudStatus 
+        fraudStatus
     } = req.body
 
     const transaction = await db.Transaction.findByPk(orderId);
     const TransactionId = orderId;
 
     const checkin_code = nanoid(8);
-    try{
-        if (transactionStatus == 'capture'){
+    try {
+        if (transactionStatus == 'capture') {
             await db.Checkin_Status.create({
                 TransactionId: TransactionId,
                 checkin_code: checkin_code
@@ -234,7 +240,7 @@ module.exports.MidtransNotification = async function(req,res){
                 success: true,
                 message: "Payment received"
             })
-        } else if (transactionStatus == 'settlement'){
+        } else if (transactionStatus == 'settlement') {
             await db.Checkin_Status.create({
                 TransactionId: TransactionId,
                 checkin_code: checkin_code
@@ -249,16 +255,16 @@ module.exports.MidtransNotification = async function(req,res){
             })
         } else if (transactionStatus == 'cancel' ||
             transactionStatus == 'deny' ||
-            transactionStatus == 'expire'){
-                await transaction.update({
-                    payment_status: "Failed",
-                    expiredAt: null
-                })
-                return res.status(200).json({
-                    success: true,
-                    message: "Transaction Failed"
-                })
-        } else if (transactionStatus == 'pending'){
+            transactionStatus == 'expire') {
+            await transaction.update({
+                payment_status: "Failed",
+                expiredAt: null
+            })
+            return res.status(200).json({
+                success: true,
+                message: "Transaction Failed"
+            })
+        } else if (transactionStatus == 'pending') {
             await transaction.update({
                 payment_status: "pending"
             })
@@ -267,11 +273,11 @@ module.exports.MidtransNotification = async function(req,res){
                 message: "Payment pending"
             })
         }
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message,
         });
     }
-    
+
 }
