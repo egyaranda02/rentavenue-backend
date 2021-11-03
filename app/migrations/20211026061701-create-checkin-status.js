@@ -9,8 +9,8 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       TransactionId: {
-        type: Sequelize.INTEGER,
-        references: {model: 'Transactions', key:'id'},
+        type: Sequelize.STRING,
+        references: { model: 'Transactions', key: 'id' },
         onDelete: 'CASCADE'
       },
       checkin_code: {

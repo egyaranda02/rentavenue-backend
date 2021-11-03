@@ -4,20 +4,20 @@ module.exports = {
     await queryInterface.createTable('Transactions', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        autoIncrement: false,
+        type: Sequelize.STRING
       },
       UserId: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: {model: 'Users', key:'id'},
+        references: { model: 'Users', key: 'id' },
         onDelete: 'CASCADE'
       },
       VenueId: {
         allowNull: false,
         type: Sequelize.INTEGER,
-        references: {model: 'Venues', key:'id'},
+        references: { model: 'Venues', key: 'id' },
         onDelete: 'CASCADE'
       },
       start_book: {
@@ -32,10 +32,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
-      token :{
+      token: {
         type: Sequelize.STRING
       },
-      payment_status:{
+      payment_status: {
         allowNull: false,
         type: Sequelize.STRING
       },

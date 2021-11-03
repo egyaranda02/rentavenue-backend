@@ -13,9 +13,16 @@ module.exports = (sequelize, DataTypes) => {
       Transaction.belongsTo(models.Venue)
       Transaction.belongsTo(models.User)
       Transaction.hasOne(models.Checkin_Status)
+      Transaction.hasOne(models.Feedback)
     }
   };
   Transaction.init({
+    id: {
+      allowNull: false,
+      primaryKey: true,
+      type: DataTypes.STRING,
+      unique: true
+    },
     UserId: {
       allowNull: false,
       type: DataTypes.INTEGER
@@ -32,14 +39,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.DATE
     },
-    total_payment:{
+    total_payment: {
       allowNull: false,
       type: DataTypes.INTEGER
     },
     token: {
       type: DataTypes.STRING
     },
-    payment_status:{
+    payment_status: {
       allowNull: false,
       type: DataTypes.STRING,
       defaultValue: "pending"

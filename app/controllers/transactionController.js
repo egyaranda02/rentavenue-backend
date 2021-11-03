@@ -15,6 +15,7 @@ module.exports.createTransaction = async function (req, res) {
         finish_book,
     } = req.body
     const now = moment();
+    const id = nanoid(12);
     if (moment(start_book).isBefore(now)) {
         return res.status(200).json({
             success: false,
@@ -98,6 +99,7 @@ module.exports.createTransaction = async function (req, res) {
         const expiredAt = moment().add(1, 'hours');
 
         const transaction = await db.Transaction.create({
+            id,
             UserId,
             VenueId,
             start_book,
