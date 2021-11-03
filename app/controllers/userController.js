@@ -11,10 +11,10 @@ const smtpTransportModule = require("nodemailer-smtp-transport");
 
 const tokenAge = 60 * 60;
 
-module.exports.getUserDetail = async function(req, res){
-    try{
+module.exports.getUserDetail = async function (req, res) {
+    try {
         const user = await db.User.findByPk(req.params.id, {
-            attributes:[
+            attributes: [
                 'id',
                 'email',
                 'firstName',
@@ -24,7 +24,7 @@ module.exports.getUserDetail = async function(req, res){
                 'profile_picture'
             ]
         })
-        if(!user){
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found",
@@ -34,7 +34,7 @@ module.exports.getUserDetail = async function(req, res){
             success: true,
             data: user,
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -42,8 +42,8 @@ module.exports.getUserDetail = async function(req, res){
     }
 }
 
-module.exports.register = async function(req, res){
-    const{
+module.exports.register = async function (req, res) {
+    const {
         email,
         password,
         confirm_password,
@@ -52,16 +52,16 @@ module.exports.register = async function(req, res){
         gender,
         phone_number
     } = req.body;
-    try{
-        if(password !== confirm_password){
+    try {
+        if (password !== confirm_password) {
             return res.status(200).json({
                 success: false,
                 message: "Password and confirm password is not the same"
             });
         }
-        const findEmailUser = await db.User.findOne({where: {email: email}});
-        const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
-        if(findEmailUser || findEmailVendor){
+        const findEmailUser = await db.User.findOne({ where: { email: email } });
+        const findEmailVendor = await db.Vendor.findOne({ where: { email: email } });
+        if (findEmailUser || findEmailVendor) {
             return res.status(200).json({
                 success: false,
                 message: "Email has been used"
@@ -79,8 +79,8 @@ module.exports.register = async function(req, res){
             smtpTransportModule({
                 service: "gmail",
                 auth: {
-                user: process.env.EMAIL,
-                pass: process.env.EMAIL_PASSWORD,
+                    user: process.env.EMAIL,
+                    pass: process.env.EMAIL_PASSWORD,
                 },
             })
         );
@@ -91,9 +91,9 @@ module.exports.register = async function(req, res){
             to: email,
             subject: "Please confirm your Email account",
             html:
-            "Hello,<br> Please Click on the link to verify your email.<br><a href=" +
-            link +
-            ">Click here to verify</a>",
+                "Hello,<br> Please Click on the link to verify your email.<br><a href=" +
+                link +
+                ">Click here to verify</a>",
         };
         smtpTransport.sendMail(mailOptions, function (error, response) {
             if (error) {
@@ -114,22 +114,22 @@ module.exports.register = async function(req, res){
             message: "Register Success!",
             data: user
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
 }
 
-module.exports.verification = async function(req, res){
+module.exports.verification = async function (req, res) {
     const token = req.query.token;
-    try{
-        const findActivation = await db.Activation.findOne({where: {token: token}});
-        if(findActivation){
+    try {
+        const findActivation = await db.Activation.findOne({ where: { token: token } });
+        if (findActivation) {
             const user = await db.User.findByPk(findActivation.id_user);
-            await user.update({is_verified: true});
-            await db.Activation.destroy({where: {id: findActivation.id}});
+            await user.update({ is_verified: true });
+            await db.Activation.destroy({ where: { id: findActivation.id } });
             const UserId = findActivation.id_user;
             const VendorId = null;
             await db.Wallet.create({
@@ -140,13 +140,13 @@ module.exports.verification = async function(req, res){
                 success: true,
                 message: "Email verification success",
             });
-        }else{
+        } else {
             return res.status(200).json({
                 success: false,
                 message: "Token not found",
             });
         }
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -154,20 +154,20 @@ module.exports.verification = async function(req, res){
     }
 };
 
-module.exports.login = async function(req, res){
-    try{
-        const user = await db.User.findOne({ where: {email: req.body.email} });
-        if(user){
-            if(user.is_verified == false){
+module.exports.login = async function (req, res) {
+    try {
+        const user = await db.User.findOne({ where: { email: req.body.email } });
+        if (user) {
+            if (user.is_verified == false) {
                 return res.status(200).json({
                     succes: false,
                     message: "Please verify you email first"
                 });
             }
             const passwordAuth = bcrypt.compareSync(req.body.password, user.password);
-            if(passwordAuth){
-                const token = await jwt.sign({UserId: user.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
-                res.cookie("jwt", token, { maxAge: 60*60*1000 });
+            if (passwordAuth) {
+                const token = await jwt.sign({ UserId: user.id }, process.env.SECRET_KEY, { expiresIn: tokenAge });
+                res.cookie("jwt", token, { maxAge: 60 * 60 * 1000 });
                 return res.status(201).json({
                     success: true,
                     message: "Login Success",
@@ -189,7 +189,7 @@ module.exports.login = async function(req, res){
             success: false,
             message: "Email is not registered",
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -197,8 +197,8 @@ module.exports.login = async function(req, res){
     }
 }
 
-module.exports.editUser = async function(req,res){
-    const{
+module.exports.editUser = async function (req, res) {
+    const {
         password,
         firstName,
         lastName,
@@ -229,13 +229,13 @@ module.exports.editUser = async function(req,res){
     }
     // See if user changing profile picture
     let profile_picture;
-    if(req.file){
-        if(findUser.profile_picture !== 'profile_pict.jpg'){
+    if (req.file) {
+        if (findUser.profile_picture !== 'profile_pict.jpg') {
             fs.unlinkSync(`./assets/user/profile_picture/${findUser.profile_picture}`);
         }
         profile_picture = req.file.filename;
     }
-    try{
+    try {
         findUser.update({
             firstName: firstName,
             lastName: lastName,
@@ -252,7 +252,7 @@ module.exports.editUser = async function(req,res){
                 email: findUser.email
             }
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -269,11 +269,11 @@ module.exports.logout = (req, res) => {
 };
 
 // Transaction
-module.exports.getUserTransactionPending = async function(req,res){
-    try{
+module.exports.getUserTransactionPending = async function (req, res) {
+    try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        if(decoded.UserId != req.params.id){
+        if (decoded.UserId != req.params.id) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
@@ -285,11 +285,11 @@ module.exports.getUserTransactionPending = async function(req,res){
                 payment_status: 'pending'
             }
         })
-        return res.status(401).json({
+        return res.status(200).json({
             success: true,
             data: pendingTransaction
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -297,11 +297,11 @@ module.exports.getUserTransactionPending = async function(req,res){
     }
 }
 
-module.exports.getUserTransactionSuccess = async function(req,res){
-    try{
+module.exports.getUserTransactionSuccess = async function (req, res) {
+    try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        if(decoded.UserId != req.params.id){
+        if (decoded.UserId != req.params.id) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
@@ -322,11 +322,11 @@ module.exports.getUserTransactionSuccess = async function(req,res){
                 }
             ]
         })
-        return res.status(401).json({
+        return res.status(200).json({
             success: true,
             data: successTransaction
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -334,11 +334,11 @@ module.exports.getUserTransactionSuccess = async function(req,res){
     }
 }
 
-module.exports.getUserTransactionFail = async function(req,res){
-    try{
+module.exports.getUserTransactionFail = async function (req, res) {
+    try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        if(decoded.UserId != req.params.id){
+        if (decoded.UserId != req.params.id) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
@@ -352,11 +352,11 @@ module.exports.getUserTransactionFail = async function(req,res){
                 }
             }
         })
-        return res.status(401).json({
+        return res.status(200).json({
             success: true,
             data: failedTransaction
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
