@@ -2,7 +2,7 @@ const db = require("../models/index.js");
 const { Op } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const { nanoid } = require('nanoid');
+const { customAlphabet } = require('nanoid');
 const moment = require('moment');
 const { sequelize } = require("../models/index.js");
 require("dotenv").config({ path: "./.env" });
@@ -15,7 +15,8 @@ module.exports.createTransaction = async function (req, res) {
         finish_book,
     } = req.body
     const now = moment();
-    const id = nanoid(12);
+    const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvxyz', 12);
+    const id = nanoid();
     if (moment(start_book).isBefore(now)) {
         return res.status(200).json({
             success: false,
@@ -158,7 +159,8 @@ module.exports.MidtransNotification = async function (req, res) {
     //     serverKey : process.env.MIDTRANS_SERVER_KEY,
     //     clientKey : process.env.MIDTRANS_CLIENT_KEY
     // });
-    // const checkin_code = nanoid(8);
+    // const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvxyz', 8);
+    // const checkin_code = nanoid();
     // apiClient.transaction.notification(req)
     // .then(async (statusResponse)=>{
     //     let orderId = statusResponse.order_id;
@@ -227,7 +229,8 @@ module.exports.MidtransNotification = async function (req, res) {
     const transaction = await db.Transaction.findByPk(orderId);
     const TransactionId = orderId;
 
-    const checkin_code = nanoid(8);
+    const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvxyz', 8);
+    const checkin_code = nanoid();
     try {
         if (transactionStatus == 'capture') {
             await db.Checkin_Status.create({
