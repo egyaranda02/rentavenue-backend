@@ -8,7 +8,7 @@ const transactionController = require('../../controllers/transactionController')
 const feedbackController = require('../../controllers/feedbackController');
 
 
-transactionRouter.post('/', transactionController.createTransaction);
+transactionRouter.post('/', authMiddleware.checkUser, transactionController.createTransaction);
 transactionRouter.post('/midtrans/notification', transactionController.MidtransNotification);
-transactionRouter.post('/:id/feedback/', feedbackController.create);
+transactionRouter.post('/:id/feedback/', authMiddleware.checkUser, feedbackController.create);
 module.exports = transactionRouter;
