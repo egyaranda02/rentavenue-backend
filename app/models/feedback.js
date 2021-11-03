@@ -10,26 +10,24 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Feedback.belongsTo(models.Venue)
+      Feedback.belongsTo(models.Transaction)
     }
   };
   Feedback.init({
-    UserId: {
+    TransactionId: {
       allowNull: false,
-      type: DataTypes.INTEGER
-    },
-    VenueId: {
-      allowNull: false,
-      type: DataTypes.INTEGER
+      type: DataTypes.STRING,
     },
     feedback_content: {
-      allowNull: false,
       type: DataTypes.TEXT
     },
     rating: {
-      allowNull: false,
-      type: DataTypes.INTEGER
-    },
+      type: DataTypes.INTEGER,
+      validate: {
+        max: 5,
+        min: 1
+      }
+    }
   }, {
     sequelize,
     modelName: 'Feedback',

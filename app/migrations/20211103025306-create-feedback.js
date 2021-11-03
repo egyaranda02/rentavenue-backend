@@ -1,4 +1,7 @@
 'use strict';
+
+const { sequelize } = require("../models");
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Feedbacks', {
@@ -8,22 +11,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      UserId: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {model: 'Users', key:'id'},
+      TransactionId: {
+        type: Sequelize.STRING,
+        references: { model: 'Transactions', key: 'id' },
         onDelete: 'CASCADE'
       },
-      VenueId: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {model: 'Venues', key:'id'},
-        onDelete: 'CASCADE'
-      },
-      feedback_content:{
+      feedback_content: {
         type: Sequelize.TEXT
       },
-      rating:{
+      rating: {
         type: Sequelize.INTEGER
       },
       createdAt: {

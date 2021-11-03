@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes) => {
       Venue.belongsTo(models.Vendor)
       Venue.hasMany(models.Venue_Photo)
       Venue.hasMany(models.Document)
-      Venue.hasMany(models.Feedback)
       Venue.hasMany(models.Transaction)
     }
   };
@@ -23,51 +22,51 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
     capacity: {
       type: DataTypes.INTEGER,
-      allowNull:false
+      allowNull: false
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
     price: {
       type: DataTypes.INTEGER,
-      allowNull:false
+      allowNull: false
     },
     city: {
       type: DataTypes.STRING,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
     address: {
       type: DataTypes.TEXT,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
     longitude: {
       type: DataTypes.STRING,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
     latitude: {
       type: DataTypes.STRING,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },

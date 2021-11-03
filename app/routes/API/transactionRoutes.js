@@ -5,8 +5,10 @@ const path = require('path');
 const transactionRouter = express.Router();
 const authMiddleware = require('../../middleware/authMiddleware');
 const transactionController = require('../../controllers/transactionController');
+const feedbackController = require('../../controllers/feedbackController');
+
 
 transactionRouter.post('/', transactionController.createTransaction);
 transactionRouter.post('/midtrans/notification', transactionController.MidtransNotification);
-
-module.exports= transactionRouter;
+transactionRouter.post('/:id/feedback/', feedbackController.create);
+module.exports = transactionRouter;
