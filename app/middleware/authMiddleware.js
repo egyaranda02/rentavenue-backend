@@ -1,11 +1,11 @@
-require('dotenv').config({path: '../.env'});
+require('dotenv').config({ path: '../.env' });
 const db = require('../models/index.js');
 const jwt = require('jsonwebtoken');
 const { Op } = require("sequelize");
 
-const checkLogin = (req, res, next) =>{
+const checkLogin = (req, res, next) => {
     const token = req.cookies.jwt;
-    if(!token){
+    if (!token) {
         return res.status(401).json({
             success: false,
             message: "You aren't logged in"
@@ -14,17 +14,17 @@ const checkLogin = (req, res, next) =>{
     next();
 }
 
-const checkAdmin = (req, res, next)=>{
+const checkAdmin = (req, res, next) => {
     const token = req.cookies.jwt;
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    if(!decoded.AdminId){
+    if (!decoded.AdminId) {
         return res.status(401).json({
             success: false,
             message: "You are not an Admin"
         })
     }
     const admin = db.Admin.findByPk(decoded.AdminId);
-    if(!admin){
+    if (!admin) {
         return res.status(401).json({
             success: false,
             message: "You are not an Admin"
@@ -32,10 +32,11 @@ const checkAdmin = (req, res, next)=>{
     }
     next();
 }
-const checkUser = (req, res, next)=>{
+
+const checkUser = (req, res, next) => {
     const token = req.cookies.jwt;
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    if(!decoded.UserId){
+    if (!decoded.UserId) {
         return res.status(401).json({
             success: false,
             message: "You are not a User"
@@ -44,10 +45,10 @@ const checkUser = (req, res, next)=>{
     next();
 }
 
-const checkVendor= (req, res, next)=>{
+const checkVendor = (req, res, next) => {
     const token = req.cookies.jwt;
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    if(!decoded.VendorId){
+    if (!decoded.VendorId) {
         return res.status(401).json({
             success: false,
             message: "You are not a Vendor"
@@ -56,4 +57,4 @@ const checkVendor= (req, res, next)=>{
     next();
 }
 
-module.exports = {checkLogin, checkAdmin, checkUser, checkVendor}
+module.exports = { checkLogin, checkAdmin, checkUser, checkVendor }

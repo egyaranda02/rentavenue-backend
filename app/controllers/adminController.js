@@ -8,14 +8,14 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const tokenAge = 60 * 5;
 
-module.exports.login = async function(req, res){
-    try{
-        const admin = await db.Admin.findOne({where: {email: req.body.email}});
-        if(admin){
+module.exports.login = async function (req, res) {
+    try {
+        const admin = await db.Admin.findOne({ where: { email: req.body.email } });
+        if (admin) {
             const passwordAuth = bcrypt.compareSync(req.body.password, admin.password);
-            if(passwordAuth){
-                const token = await jwt.sign({AdminId: admin.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
-                res.cookie('jwt', token, {maxAge: 60*5*1000});
+            if (passwordAuth) {
+                const token = await jwt.sign({ AdminId: admin.id }, process.env.SECRET_KEY, { expiresIn: tokenAge });
+                res.cookie('jwt', token, { maxAge: 60 * 5 * 1000 });
                 return res.status(200).json({
                     success: true,
                     message: "Login Success",
@@ -35,7 +35,7 @@ module.exports.login = async function(req, res){
             success: false,
             message: "Email is not registered"
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -43,46 +43,47 @@ module.exports.login = async function(req, res){
     }
 }
 
-module.exports.getVenue = async function(req, res){
-    try{
+module.exports.getVenue = async function (req, res) {
+    try {
         const findVenue = await db.Venue.findAll();
         return res.status(200).json({
             success: true,
             data: findVenue
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
 }
 
-module.exports.getVenueNotVerified = async function(req, res){
-    try{
-        const findVenue = await db.Venue.findAll({where: {is_verified: false}});
+module.exports.getVenueNotVerified = async function (req, res) {
+    try {
+        const findVenue = await db.Venue.findAll({ where: { is_verified: false } });
         return res.status(200).json({
             success: true,
             data: findVenue
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
 }
 
-module.exports.getDetailVenue = async function(req, res){
-    try{
-        const findVenue = await db.Venue.findOne({where: {id: req.params.id},
-            include:[
+module.exports.getDetailVenue = async function (req, res) {
+    try {
+        const findVenue = await db.Venue.findOne({
+            where: { id: req.params.id },
+            include: [
                 {
                     model: db.Document,
                     attributes: {
                         exclude: ['createdAt', 'updatedAt']
                     }
-                },{
+                }, {
                     model: db.Venue_Photo,
                     attributes: {
                         exclude: ['createdAt', 'updatedAt']
@@ -94,34 +95,49 @@ module.exports.getDetailVenue = async function(req, res){
             success: true,
             data: findVenue
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
 }
 
-module.exports.venueVerification = async function(req, res){
-    const {respond} = req.body;
-    try{
+module.exports.getTransaction = async function (req, res) {
+    try {
+        const transaction = await db.Transaction.findAll();
+        return res.status(200).json({
+            success: true,
+            data: findVenue
+        })
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+module.exports.venueVerification = async function (req, res) {
+    const { respond } = req.body;
+    try {
         const findVenue = await db.Venue.findByPk(req.params.id);
-        if(!findVenue){
+        if (!findVenue) {
             return res.status(404).json({
                 success: false,
                 message: "Venue not found"
             })
         }
-        if(!respond){
+        if (!respond) {
             return res.status(200).json({
                 success: false,
                 message: "please enter a respond"
             })
         }
-        if(respond == "accept"){
-            if(findVenue.is_verified == true){
+        if (respond == "accept") {
+            if (findVenue.is_verified == true) {
                 return res.status(200).json({
-                    success:false,
+                    success: false,
                     message: "This venue is already verified"
                 })
             }
@@ -130,16 +146,16 @@ module.exports.venueVerification = async function(req, res){
                 status: "active"
             })
             return res.status(200).json({
-                success:true,
+                success: true,
                 message: "Venue is verified"
             })
         }
-        if(respond == "reject"){
+        if (respond == "reject") {
             findVenue.update({
                 status: "rejected"
             })
             return res.status(200).json({
-                success:true,
+                success: true,
                 message: "Venue rejected"
             })
         }
@@ -148,18 +164,18 @@ module.exports.venueVerification = async function(req, res){
             message: "please enter a correct respond"
         })
 
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
 }
 
-module.exports.blockVenue = async function(req, res){
-    try{
+module.exports.blockVenue = async function (req, res) {
+    try {
         const findVenue = db.Venue.findByPk(req.params.id);
-        if(!findVenue){
+        if (!findVenue) {
             return res.status(404).json({
                 success: false,
                 message: "Venue not found"
@@ -173,24 +189,24 @@ module.exports.blockVenue = async function(req, res){
             success: true,
             message: "Venue Blocked"
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
 }
 
-module.exports.getUser = async function(req, res){
-    try{
+module.exports.getUser = async function (req, res) {
+    try {
         const findUser = await db.User.findAll();
         return res.status(200).json({
             success: true,
             data: findUser
         })
-    }catch(error){
+    } catch (error) {
         return res.status(200).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
