@@ -35,12 +35,11 @@ const autoCheckout = cron.schedule('* * * * *', async () => {
         where: {
             checkout_time: null
         },
+        attributes: ['TransactionId', 'checkout_time'],
         include: [
             {
                 model: db.Transaction,
-                attribute: {
-                    exclude: ['createdAt', 'updatedAt']
-                },
+                attributes: ['total_payment', 'payment_status', 'finish_book'],
                 where: {
                     payment_status: "settlement",
                     finish_book: {
@@ -50,9 +49,7 @@ const autoCheckout = cron.schedule('* * * * *', async () => {
                 include: [
                     {
                         model: db.Venue,
-                        attributes: {
-                            include: ['VendorId']
-                        }
+                        attributes: ['VendorId']
                     }
                 ]
             }
