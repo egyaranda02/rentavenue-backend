@@ -46,18 +46,39 @@ const autoCheckout = cron.schedule('* * * * *', async () => {
                     finish_book: {
                         [Op.lt]: moment()
                     }
-                }
+                },
+                include: [
+                    {
+                        model: db.Venue,
+                        attributes: {
+                            include: ['VendorId']
+                        }
+                    }
+                ]
             }
         ]
     })
     checkin_status.forEach(async function (checkin) {
         const now = moment();
         if (moment(now).isAfter(checkin.Transaction.finish_book, 'day')) {
+            const total_payment = checkin.Transaction.total_payment;
+            const wallet = await db.Wallet.findOne({ where: { VendorId: checkin.Transaction.Venue.VendorId } });
             await checkin.update({
                 checkin_code: null,
                 checkout_code: null,
                 checkout_time: now
             })
+            if (!wallet) {
+                await db.Wallet.create({
+                    VendorId: checkin.Transaction.Venue.VendorId,
+                    balance: total_payment
+                })
+            } else if (wallet) {
+                const newBalance = wallet.balance + total_payment;
+                await wallet.update({
+                    balance: newBalance
+                })
+            }
         }
     })
 });
