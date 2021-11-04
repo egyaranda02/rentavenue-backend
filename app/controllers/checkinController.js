@@ -125,9 +125,36 @@ module.exports.Checkout = async function (req, res) {
                 message: "Please checkOut at the right time"
             })
         }
+        const transaction = await db.Transaction.findOne({
+            where: { id: checkin_status.TransactionId },
+            include: [
+                {
+                    model: db.Venue,
+                    attributes: {
+                        include: ['VendorId']
+                    }
+                }
+            ]
+        })
+        const total_payment = transaction.total_payment;
+        const wallet = await db.Wallet.findOne({ where: { VendorId: transaction.Venue.VendorId } });
         await checkin_status.update({
             checkout_code: null,
             checkout_time: now,
+        })
+        if (!wallet) {
+            const newWallet = await db.Wallet.create({
+                VendorId: transaction.Venue.VendorId,
+                balance: total_payment
+            });
+            return res.status(200).json({
+                success: true,
+                message: "Checkout Success"
+            })
+        }
+        const newBalance = wallet.balance + total_payment;
+        await wallet.update({
+            balance: newBalance
         })
         return res.status(200).json({
             success: true,
