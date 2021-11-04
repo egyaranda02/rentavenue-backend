@@ -11,7 +11,7 @@ const app = express()
 const apiRoutes = require("./routes/index");
 const port = 5000
 
-const task = cron.schedule('* * * * *', async () => {
+const transactionExpiration = cron.schedule('* * * * *', async () => {
     console.log('Checking Transactions Expiration');
     const transactions = await db.Transaction.findAll({
         where: {
@@ -28,6 +28,40 @@ const task = cron.schedule('* * * * *', async () => {
         })
     })
 });
+
+const autoCheckout = cron.schedule('* * * * *', async () => {
+    console.log('Auto Checkout');
+    const checkin_status = await db.Checkin_Status.findAll({
+        where: {
+            checkout_time: null
+        },
+        include: [
+            {
+                model: db.Transaction,
+                attribute: {
+                    exclude: ['createdAt', 'updatedAt']
+                },
+                where: {
+                    payment_status: "settlement",
+                    finish_book: {
+                        [Op.lt]: moment()
+                    }
+                }
+            }
+        ]
+    })
+    checkin_status.forEach(async function (checkin) {
+        const now = moment();
+        if (moment(now).isAfter(checkin.Transaction.finish_book, 'day')) {
+            await checkin.update({
+                checkin_code: null,
+                checkout_code: null,
+                checkout_time: now
+            })
+        }
+    })
+});
+
 
 const corsOptions = {
     origin: "http://localhost:3000",
@@ -47,5 +81,6 @@ app.use('/assets/venue/venue_photos', express.static(path.join(__dirname, '/asse
 app.use(cookieParser());
 app.get('/', (req, res) => res.send('Hello World!'))
 app.use("/api", apiRoutes);
-task.start();
+transactionExpiration.start();
+autoCheckout.start();
 app.listen(port, () => console.log(`This App is Running on port ` + port))
