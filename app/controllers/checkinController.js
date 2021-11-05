@@ -142,6 +142,9 @@ module.exports.Checkout = async function (req, res) {
             checkout_code: null,
             checkout_time: now,
         })
+        await transaction.update({
+            payment_status: 'finished'
+        })
         if (!wallet) {
             const newWallet = await db.Wallet.create({
                 VendorId: transaction.Venue.VendorId,

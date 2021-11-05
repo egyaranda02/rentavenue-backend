@@ -15,6 +15,7 @@ const transactionExpiration = cron.schedule('* * * * *', async () => {
     console.log('Checking Transactions Expiration');
     const transactions = await db.Transaction.findAll({
         where: {
+            payment_status: 'pending',
             expiredAt: {
                 [Op.lte]: moment()
             }
@@ -35,7 +36,7 @@ const autoCheckout = cron.schedule('* * * * *', async () => {
         where: {
             checkout_time: null
         },
-        attributes: ['TransactionId', 'checkout_time'],
+        attributes: ['id', 'TransactionId', 'checkout_time'],
         include: [
             {
                 model: db.Transaction,
@@ -65,6 +66,10 @@ const autoCheckout = cron.schedule('* * * * *', async () => {
                 checkout_code: null,
                 checkout_time: now
             })
+            await db.Transaction.update(
+                { payment_status: 'finished' },
+                { where: { id: checkin.TransactionId } }
+            )
             if (!wallet) {
                 await db.Wallet.create({
                     VendorId: checkin.Transaction.Venue.VendorId,
