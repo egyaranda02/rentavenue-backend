@@ -95,6 +95,29 @@ module.exports.getDetailVenue = async function (req, res) {
     }
 }
 
+module.exports.getVenueDate = async function (req, res) {
+    try {
+        const findDate = await db.Transaction.findAll({
+            where: {
+                VenueId: req.params.id,
+                payment_status: {
+                    [Op.or]: ['settlement', 'capture', 'finished']
+                }
+            },
+            attributes: ['start_book', 'finish_book']
+        })
+        return res.status(200).json({
+            success: true,
+            data: findDate
+        })
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
 module.exports.searchVenue = async function (req, res) {
     try {
         const findVenue = await db.Venue.findAll({

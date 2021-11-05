@@ -40,6 +40,7 @@ venueRouter.get('/city/:city', venueController.getVenueByCity);
 venueRouter.get('/search', venueController.searchVenue);
 venueRouter.post('/', authMiddleware.checkLogin, upload.fields([{ name: 'venue_photos', maxCount: 5 }, { name: 'ktp', maxCount: 1 }, { name: 'surat_tanah', maxCount: 1 }]), venueController.Create);
 venueRouter.patch('/:id', authMiddleware.checkLogin, upload.fields([{ name: 'venue_photos', maxCount: 5 }]), venueController.EditVenue);
+venueRouter.get('/:id/date', venueController.getVenueDate);
 venueRouter.get('/:id', venueController.getDetailVenue);
 venueRouter.delete('/:id', authMiddleware.checkLogin, venueController.deleteVenue);
 
