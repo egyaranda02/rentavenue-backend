@@ -7,6 +7,7 @@ const { use } = require("../routes/index.js");
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { sequelize } = require("../models/index.js");
 const smtpTransportModule = require("nodemailer-smtp-transport");
 const { triggerAsyncId } = require("async_hooks");
 const { count } = require("console");
@@ -515,7 +516,37 @@ module.exports.vendorAnalytics = async function (req, res) {
                 }
             ]
         });
-
+        const transactionPerVenue = await db.Transaction.findAll({
+            where: {
+                payment_status: 'finished'
+            },
+            attributes: ['VenueId', [sequelize.fn('count', '*'), 'count']],
+            group: ['VenueId']
+        });
+        // const transMonth = await db.Transaction.findAll({
+        //     where: {
+        //         payment_status: 'finished'
+        //     },
+        //     attributes: [
+        //         [sequelize.fn('date_trunc', 'month', sequelize.col('Transaction.createdAt')), 'Date'],
+        //         [sequelize.fn('count', '*'), 'count']
+        //     ],
+        //     include: [
+        //         {
+        //             model: db.Venue,
+        //             attributes: ['VendorId'],
+        //             where: {
+        //                 VendorId: req.params.id
+        //             }
+        //         }
+        //     ],
+        //     group: ['Date'],
+        //     raw: true
+        // })
+        let totalIncome = 0;
+        transaction.forEach(async function (trans) {
+            totalIncome += trans.total_payment;
+        })
         const totalFeedback = feedback.length;
         const totalTransaction = transaction.length;
 
@@ -523,7 +554,9 @@ module.exports.vendorAnalytics = async function (req, res) {
             success: true,
             data: {
                 totalFeedback: totalFeedback,
-                totalTransaction: totalTransaction
+                totalTransaction: totalTransaction,
+                totalIncome: totalIncome,
+                transactionPerVenue: transactionPerVenue
             }
 
         })
