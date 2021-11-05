@@ -39,11 +39,12 @@ venueRouter.get('/price/asc', venueController.getAllPriceAsc);
 venueRouter.get('/city', venueController.getCity);
 venueRouter.get('/city/:city', venueController.getVenueByCity);
 venueRouter.get('/search', venueController.searchVenue);
-venueRouter.post('/', authMiddleware.checkLogin, upload.fields([{ name: 'venue_photos', maxCount: 5 }, { name: 'ktp', maxCount: 1 }, { name: 'surat_tanah', maxCount: 1 }]), venueController.Create);
-venueRouter.patch('/:id', authMiddleware.checkLogin, upload.fields([{ name: 'venue_photos', maxCount: 5 }]), venueController.EditVenue);
+venueRouter.post('/', authMiddleware.checkLogin, authMiddleware.checkVendor, upload.fields([{ name: 'venue_photos', maxCount: 5 }, { name: 'ktp', maxCount: 1 }, { name: 'surat_tanah', maxCount: 1 }]), venueController.Create);
+venueRouter.patch('/:id', authMiddleware.checkLogin, authMiddleware.checkVendor, upload.fields([{ name: 'venue_photos', maxCount: 5 }]), venueController.EditVenue);
 venueRouter.get('/:id/date', venueController.getVenueDate);
 venueRouter.get('/:id/feedback', feedbackController.getFeedbackVenue);
 venueRouter.get('/:id', venueController.getDetailVenue);
-venueRouter.delete('/:id', authMiddleware.checkLogin, venueController.deleteVenue);
+venueRouter.delete('/photo/:photoId', authMiddleware.checkLogin, authMiddleware.checkVendor, venueController.deleteVenuePhotos)
+venueRouter.delete('/:id', authMiddleware.checkLogin, authMiddleware.checkVendor, venueController.deleteVenue);
 
 module.exports = venueRouter;

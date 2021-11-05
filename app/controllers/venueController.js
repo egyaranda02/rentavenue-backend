@@ -308,6 +308,14 @@ module.exports.EditVenue = async function (req, res) {
     } = req.body
     try {
         const venue = await db.Venue.findByPk(req.params.id);
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.VendorId != venue.VendorId) {
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
         if (!venue) {
             if (req.files['venue_photos']) {
                 req.files['venue_photos'].forEach(async function (file) {
@@ -364,16 +372,48 @@ module.exports.EditVenue = async function (req, res) {
     }
 }
 
+module.exports.deleteVenuePhotos = async function (req, res) {
+    try {
+        const venuePhotos = await db.Venue_Photo.findByPk(req.params.photoId)
+        const venue = await db.Venue.findByPk(venuePhotos.VenueId);
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.VendorId != venue.VendorId) {
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        await db.Venue_Photo.destroy({ where: { id: req.params.photoId } })
+        return res.status(200).json({
+            success: true,
+            message: "Delete success!"
+        })
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
 module.exports.deleteVenue = async function (req, res) {
     const { id } = req.params
     try {
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.VendorId != venue.VendorId) {
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
         await db.Venue.destroy({ where: { id: id } })
         return res.status(200).json({
             success: true,
             message: "Delete success!"
         })
     } catch (error) {
-        console.log(error);
         return res.status(400).json({
             success: false,
             message: error.message
