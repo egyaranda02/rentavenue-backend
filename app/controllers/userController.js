@@ -283,7 +283,14 @@ module.exports.getUserTransactionPending = async function (req, res) {
             where: {
                 UserId: req.params.id,
                 payment_status: 'pending'
-            }
+            }, include: [
+                {
+                    model: db.Venue,
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
+                }
+            ]
         })
         return res.status(200).json({
             success: true,
@@ -319,6 +326,12 @@ module.exports.getUserTransactionSuccess = async function (req, res) {
                     attributes: {
                         exclude: ['TransactionId', 'createdAt', 'updatedAt']
                     }
+                },
+                {
+                    model: db.Venue,
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
                 }
             ]
         })
@@ -334,7 +347,7 @@ module.exports.getUserTransactionSuccess = async function (req, res) {
     }
 }
 
-module.exports.getUserTransactionFail = async function (req, res) {
+module.exports.getUserTransactionFinished = async function (req, res) {
     try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
@@ -344,17 +357,15 @@ module.exports.getUserTransactionFail = async function (req, res) {
                 message: "You don't have authorization"
             })
         }
-        const failedTransaction = await db.Transaction.findAll({
+        const finishedTransaction = await db.Transaction.findAll({
             where: {
                 UserId: req.params.id,
-                payment_status: {
-                    [Op.or]: ['expired', 'Failed']
-                }
+                payment_status: 'finished'
             }
         })
         return res.status(200).json({
             success: true,
-            data: failedTransaction
+            data: finishedTransaction
         })
     } catch (error) {
         return res.status(400).json({
