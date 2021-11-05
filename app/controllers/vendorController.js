@@ -12,18 +12,18 @@ const { triggerAsyncId } = require("async_hooks");
 
 const tokenAge = 60 * 60;
 
-const checkVendor = (id, token) =>{
+const checkVendor = (id, token) => {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
     const VendorId = decoded.VendorId;
-    if(id != VendorId){
+    if (id != VendorId) {
         return true
     }
-} 
+}
 
-module.exports.getVendorDetails = async function(req, res){
-    try{
+module.exports.getVendorDetails = async function (req, res) {
+    try {
         const vendor = await db.Vendor.findByPk(req.params.id, {
-            attributes:[
+            attributes: [
                 'id',
                 'email',
                 'vendor_name',
@@ -33,7 +33,7 @@ module.exports.getVendorDetails = async function(req, res){
                 'profile_picture'
             ]
         })
-        if(!vendor){
+        if (!vendor) {
             return res.status(404).json({
                 success: false,
                 message: "Vendor not found",
@@ -43,7 +43,7 @@ module.exports.getVendorDetails = async function(req, res){
             success: true,
             data: vendor,
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message,
@@ -52,8 +52,8 @@ module.exports.getVendorDetails = async function(req, res){
 }
 
 
-module.exports.register = async function(req,res){
-    const{
+module.exports.register = async function (req, res) {
+    const {
         email,
         password,
         confirm_password,
@@ -62,16 +62,16 @@ module.exports.register = async function(req,res){
         phone_number,
         description
     } = req.body;
-    try{
-        if(password !== confirm_password){
+    try {
+        if (password !== confirm_password) {
             return res.status(200).json({
                 success: false,
                 message: "Password and confirm password is not the same"
             });
         }
-        const findEmailUser = await db.User.findOne({where: {email: email}});
-        const findEmailVendor = await db.Vendor.findOne({where:{email: email}});
-        if(findEmailUser || findEmailVendor){
+        const findEmailUser = await db.User.findOne({ where: { email: email } });
+        const findEmailVendor = await db.Vendor.findOne({ where: { email: email } });
+        if (findEmailUser || findEmailVendor) {
             return res.status(200).json({
                 success: false,
                 message: "Email has been used"
@@ -89,8 +89,8 @@ module.exports.register = async function(req,res){
             smtpTransportModule({
                 service: "gmail",
                 auth: {
-                user: process.env.EMAIL,
-                pass: process.env.EMAIL_PASSWORD,
+                    user: process.env.EMAIL,
+                    pass: process.env.EMAIL_PASSWORD,
                 },
             })
         );
@@ -101,9 +101,9 @@ module.exports.register = async function(req,res){
             to: email,
             subject: "Please confirm your Email account",
             html:
-            "Hello,<br> Please Click on the link to verify your email.<br><a href=" +
-            link +
-            ">Click here to verify</a>",
+                "Hello,<br> Please Click on the link to verify your email.<br><a href=" +
+                link +
+                ">Click here to verify</a>",
         };
         smtpTransport.sendMail(mailOptions, function (error, response) {
             if (error) {
@@ -125,23 +125,23 @@ module.exports.register = async function(req,res){
             message: "Register Success!",
             data: vendor
         });
-    }catch(error){
+    } catch (error) {
         console.log(error);
         return res.status(400).json({
-            success:false,
+            success: false,
             message: error.message
         })
     }
 }
 
-module.exports.verification = async function(req, res){
+module.exports.verification = async function (req, res) {
     const token = req.query.token;
-    try{
-        const findActivation = await db.Activation.findOne({where: {token: token}});
-        if(findActivation){
+    try {
+        const findActivation = await db.Activation.findOne({ where: { token: token } });
+        if (findActivation) {
             const vendor = await db.Vendor.findByPk(findActivation.id_vendor);
-            await vendor.update({is_verified: true});
-            await db.Activation.destroy({where: {id: findActivation.id}});
+            await vendor.update({ is_verified: true });
+            await db.Activation.destroy({ where: { id: findActivation.id } });
             const VendorId = findActivation.id_vendor;
             const UserId = null;
             await db.Wallet.create({
@@ -157,7 +157,7 @@ module.exports.verification = async function(req, res){
             success: false,
             message: "Token not found",
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message,
@@ -165,20 +165,20 @@ module.exports.verification = async function(req, res){
     }
 }
 
-module.exports.login = async function(req, res){
-    try{
-        const vendor = await db.Vendor.findOne({where: {email: req.body.email}});
-        if(vendor){
-            if(vendor.is_verified == false){
+module.exports.login = async function (req, res) {
+    try {
+        const vendor = await db.Vendor.findOne({ where: { email: req.body.email } });
+        if (vendor) {
+            if (vendor.is_verified == false) {
                 return res.status(200).json({
-                    success:false, 
+                    success: false,
                     message: "Please activate your email first"
                 });
             }
             const passwordAuth = bcrypt.compareSync(req.body.password, vendor.password);
-            if(passwordAuth){
-                const token = await jwt.sign({VendorId: vendor.id}, process.env.SECRET_KEY, {expiresIn: tokenAge});
-                res.cookie("jwt", token, { maxAge: 60*60*1000, httpOnly: true, secure: false})
+            if (passwordAuth) {
+                const token = await jwt.sign({ VendorId: vendor.id }, process.env.SECRET_KEY, { expiresIn: tokenAge });
+                res.cookie("jwt", token, { maxAge: 60 * 60 * 1000, httpOnly: true, secure: false })
                 return res.status(200).json({
                     success: true,
                     message: "Login Success",
@@ -199,7 +199,7 @@ module.exports.login = async function(req, res){
             success: false,
             message: "Email is not registered"
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message,
@@ -207,8 +207,8 @@ module.exports.login = async function(req, res){
     }
 }
 
-module.exports.editVendor = async function(req, res){
-    const{
+module.exports.editVendor = async function (req, res) {
+    const {
         password,
         vendor_name,
         address,
@@ -217,7 +217,7 @@ module.exports.editVendor = async function(req, res){
     } = req.body;
     const findVendor = await db.Vendor.findByPk(req.params.id);
     const token = req.cookies.jwt;
-    if(checkVendor(findVendor.id, token)){
+    if (checkVendor(findVendor.id, token)) {
         return res.status(401).json({
             success: false,
             message: "Unauthorized",
@@ -238,7 +238,7 @@ module.exports.editVendor = async function(req, res){
     }
     // compare password
     const comparePassword = bcrypt.compareSync(password, findVendor.password);
-    if(!comparePassword){
+    if (!comparePassword) {
         return res.status(200).json({
             success: false,
             message: "Wrong Password!",
@@ -246,13 +246,13 @@ module.exports.editVendor = async function(req, res){
     }
     // See if user changing profile picture
     let profile_picture;
-    if(req.file){
-        if(findVendor.profile_picture != 'profile_pict.jpg'){
+    if (req.file) {
+        if (findVendor.profile_picture != 'profile_pict.jpg') {
             fs.unlinkSync(`./assets/vendor/profile_picture/${findVendor.profile_picture}`);
         }
         profile_picture = req.file.filename;
     }
-    try{
+    try {
         findVendor.update({
             vendor_name: vendor_name,
             address: address,
@@ -268,7 +268,7 @@ module.exports.editVendor = async function(req, res){
                 email: findVendor.email
             }
         });
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message,
@@ -286,11 +286,11 @@ module.exports.logout = (req, res) => {
 
 // Venue for Vendor
 
-module.exports.getVenueVerified = async function(req, res){
-    try{
+module.exports.getVenueVerified = async function (req, res) {
+    try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        if(decoded.VendorId != req.params.id){
+        if (decoded.VendorId != req.params.id) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
@@ -300,7 +300,7 @@ module.exports.getVenueVerified = async function(req, res){
             where: {
                 VendorId: req.params.id,
                 is_verified: true
-            }, include:[
+            }, include: [
                 {
                     model: db.Venue_Photo,
                     attributes: {
@@ -313,7 +313,7 @@ module.exports.getVenueVerified = async function(req, res){
             success: true,
             data: verifiedVenue
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -321,11 +321,11 @@ module.exports.getVenueVerified = async function(req, res){
     }
 }
 
-module.exports.getVenueNotVerified = async function(req, res){
-    try{
+module.exports.getVenueNotVerified = async function (req, res) {
+    try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        if(decoded.VendorId != req.params.id){
+        if (decoded.VendorId != req.params.id) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
@@ -335,7 +335,7 @@ module.exports.getVenueNotVerified = async function(req, res){
             where: {
                 VendorId: req.params.id,
                 is_verified: false
-            }, include:[
+            }, include: [
                 {
                     model: db.Venue_Photo,
                     attributes: {
@@ -348,7 +348,7 @@ module.exports.getVenueNotVerified = async function(req, res){
             success: true,
             data: notVerifiedVenue
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -357,11 +357,11 @@ module.exports.getVenueNotVerified = async function(req, res){
 }
 
 // transaction
-module.exports.getVendorTransactionPending = async function(req,res){
-    try{
+module.exports.getVendorTransactionPending = async function (req, res) {
+    try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        if(decoded.VendorId != req.params.id){
+        if (decoded.VendorId != req.params.id) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
@@ -370,18 +370,18 @@ module.exports.getVendorTransactionPending = async function(req,res){
         const pendingTransaction = await db.Transaction.findAll({
             where: {
                 payment_status: 'pending'
-            }, include:[
+            }, include: [
                 {
                     model: db.Venue,
-                    where: {VendorId: req.params.id}
+                    where: { VendorId: req.params.id }
                 }
             ]
         })
-        return res.status(401).json({
+        return res.status(200).json({
             success: true,
             data: pendingTransaction
         })
-    }catch(error){
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message
@@ -389,11 +389,11 @@ module.exports.getVendorTransactionPending = async function(req,res){
     }
 }
 
-module.exports.getVendorTransactionSuccess = async function(req,res){
-    try{
+module.exports.getVendorTransactionSuccess = async function (req, res) {
+    try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        if(decoded.VendorId != req.params.id){
+        if (decoded.VendorId != req.params.id) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
@@ -408,20 +408,62 @@ module.exports.getVendorTransactionSuccess = async function(req,res){
                 {
                     model: db.Checkin_Status,
                     attributes: {
-                        exclude: ['checkin_code','checkout_code','TransactionId', 'createdAt', 'updatedAt']
+                        exclude: ['checkin_code', 'checkout_code', 'TransactionId', 'createdAt', 'updatedAt']
                     }
                 },
                 {
                     model: db.Venue,
-                    where: {VendorId: req.params.id}
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
                 }
             ]
         })
-        return res.status(401).json({
+        return res.status(200).json({
             success: true,
             data: successTransaction
         })
-    }catch(error){
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+module.exports.getVendorTransactionFinished = async function (req, res) {
+    try {
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.VendorId != req.params.id) {
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const finishedTransaction = await db.Transaction.findAll({
+            where: {
+                payment_status: 'finished'
+            }, include: [
+                {
+                    model: db.Checkin_Status,
+                    attributes: {
+                        exclude: ['checkin_code', 'checkout_code', 'TransactionId', 'createdAt', 'updatedAt']
+                    }
+                },
+                {
+                    model: db.Venue,
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
+                }
+            ]
+        })
+        return res.status(200).json({
+            success: true,
+            data: finishedTransaction
+        })
+    } catch (error) {
         return res.status(400).json({
             success: false,
             message: error.message

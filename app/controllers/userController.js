@@ -361,7 +361,20 @@ module.exports.getUserTransactionFinished = async function (req, res) {
             where: {
                 UserId: req.params.id,
                 payment_status: 'finished'
-            }
+            }, include: [
+                {
+                    model: db.Checkin_Status,
+                    attributes: {
+                        exclude: ['TransactionId', 'createdAt', 'updatedAt']
+                    }
+                },
+                {
+                    model: db.Venue,
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt']
+                    }
+                }
+            ]
         })
         return res.status(200).json({
             success: true,
