@@ -114,9 +114,17 @@ module.exports.getFeedbackVenue = async function (req, res) {
                 }
             ]
         })
+        let avgRating = 0
+        findFeedback.forEach(async function (feedback) {
+            avgRating += feedback.rating
+        })
+        avgRating /= findFeedback.length;
         return res.status(200).json({
             success: true,
-            data: findFeedback
+            data: {
+                averageRating: avgRating,
+                findFeedback
+            }
         })
     } catch (error) {
         return res.status(400).json({
