@@ -363,6 +363,10 @@ module.exports.getUserTransactionFinished = async function (req, res) {
                 payment_status: 'finished'
             }, include: [
                 {
+                    model: db.Feedback,
+                    attributes: ['id', 'rating', 'feedback_content']
+                },
+                {
                     model: db.Checkin_Status,
                     attributes: {
                         exclude: ['TransactionId', 'createdAt', 'updatedAt']
