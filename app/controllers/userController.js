@@ -236,7 +236,7 @@ module.exports.editUser = async function (req, res) {
         profile_picture = req.file.filename;
     }
     try {
-        findUser.update({
+        await findUser.update({
             firstName: firstName,
             lastName: lastName,
             gender: gender,

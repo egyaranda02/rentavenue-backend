@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const smtpTransportModule = require("nodemailer-smtp-transport");
 const { triggerAsyncId } = require("async_hooks");
+const { count } = require("console");
 
 const tokenAge = 60 * 60;
 
@@ -253,7 +254,7 @@ module.exports.editVendor = async function (req, res) {
         profile_picture = req.file.filename;
     }
     try {
-        findVendor.update({
+        await findVendor.update({
             vendor_name: vendor_name,
             address: address,
             phone_number: phone_number,
@@ -468,5 +469,68 @@ module.exports.getVendorTransactionFinished = async function (req, res) {
             success: false,
             message: error.message
         });
+    }
+}
+
+module.exports.vendorAnalytics = async function (req, res) {
+    try {
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.VendorId != req.params.id) {
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const feedback = await db.Feedback.findAll({
+            include: [
+                {
+                    model: db.Transaction,
+                    attributes: ['id'],
+                    required: true,
+                    include: [
+                        {
+                            model: db.Venue,
+                            attributes: ['id', 'VendorId'],
+                            where: {
+                                VendorId: req.params.id
+                            }
+                        }
+                    ]
+                }
+            ]
+        })
+        const transaction = await db.Transaction.findAll({
+            where: {
+                payment_status: 'finished'
+            },
+            attributes: ['id', 'VenueId', 'total_payment'],
+            include: [
+                {
+                    model: db.Venue,
+                    attributes: ['id', 'VendorId'],
+                    where: {
+                        VendorId: req.params.id
+                    }
+                }
+            ]
+        });
+
+        const totalFeedback = feedback.length;
+        const totalTransaction = transaction.length;
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                totalFeedback: totalFeedback,
+                totalTransaction: totalTransaction
+            }
+
+        })
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        })
     }
 }

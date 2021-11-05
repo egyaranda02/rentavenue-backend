@@ -173,13 +173,14 @@ module.exports.getCity = async function (req, res) {
             where: { is_verified: true },
             attributes: ['city', 'Venue.city', [sequelize.fn('count', sequelize.col('Venue.id')), 'venueCount']],
             group: ['Venue.city'],
+            order: [[sequelize.col('venueCount'), 'DESC']]
+
         });
         return res.status(200).json({
             success: true,
             data: venue
         })
     } catch (error) {
-        console.log(error);
         return res.status(400).json({
             success: false,
             message: error.message
@@ -345,7 +346,7 @@ module.exports.EditVenue = async function (req, res) {
                 }
             })
         }
-        venue.update({
+        await venue.update({
             name: name,
             capacity: capacity,
             description: description,
