@@ -5,6 +5,7 @@ const path = require('path');
 const venueRouter = express.Router();
 const authMiddleware = require('../../middleware/authMiddleware');
 const venueController = require('../../controllers/venueController');
+const feedbackController = require('../../controllers/feedbackController');
 
 const storage = multer.diskStorage({
     destination: function (req, file, next) {
@@ -41,6 +42,7 @@ venueRouter.get('/search', venueController.searchVenue);
 venueRouter.post('/', authMiddleware.checkLogin, upload.fields([{ name: 'venue_photos', maxCount: 5 }, { name: 'ktp', maxCount: 1 }, { name: 'surat_tanah', maxCount: 1 }]), venueController.Create);
 venueRouter.patch('/:id', authMiddleware.checkLogin, upload.fields([{ name: 'venue_photos', maxCount: 5 }]), venueController.EditVenue);
 venueRouter.get('/:id/date', venueController.getVenueDate);
+venueRouter.get('/:id/feedback', feedbackController.getFeedbackVenue);
 venueRouter.get('/:id', venueController.getDetailVenue);
 venueRouter.delete('/:id', authMiddleware.checkLogin, venueController.deleteVenue);
 

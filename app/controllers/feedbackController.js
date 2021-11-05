@@ -12,6 +12,17 @@ module.exports.create = async function (req, res) {
         rating
     } = req.body
     try {
+        const checkUnique = await db.Feedback.findOne({
+            where: {
+                TransactionId: req.params.id
+            }
+        });
+        if (checkUnique) {
+            return res.status(200).json({
+                success: false,
+                message: "You already post a feedback once"
+            })
+        }
         if (!rating) {
             return res.status(200).json({
                 success: false,
@@ -57,7 +68,7 @@ module.exports.create = async function (req, res) {
                 message: "You are not authorized"
             })
         }
-        if (findTransaction.Checkin_Status.checkout_time == null) {
+        if (findTransaction.payment_status != 'finished') {
             return res.status(200).json({
                 success: false,
                 message: "Please checkout before writing feedback"
@@ -72,6 +83,40 @@ module.exports.create = async function (req, res) {
         return res.status(200).json({
             success: true,
             data: feedback
+        })
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+module.exports.getFeedbackVenue = async function (req, res) {
+    try {
+        const findFeedback = await db.Feedback.findAll({
+            attributes: {
+                exclude: ['updatedAt']
+            },
+            include: [
+                {
+                    model: db.Transaction,
+                    where: {
+                        VenueId: req.params.id
+                    },
+                    attributes: ['VenueId'],
+                    include: [
+                        {
+                            model: db.User,
+                            attributes: ['firstName', 'lastName', 'profile_picture']
+                        }
+                    ]
+                }
+            ]
+        })
+        return res.status(200).json({
+            success: true,
+            data: findFeedback
         })
     } catch (error) {
         return res.status(400).json({
