@@ -398,17 +398,17 @@ module.exports.deleteVenuePhotos = async function (req, res) {
 }
 
 module.exports.deleteVenue = async function (req, res) {
-    const { id } = req.params
     try {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const venue = await db.Venue.findByPk(req.params.id);
         if (decoded.VendorId != venue.VendorId) {
             return res.status(401).json({
                 success: false,
                 message: "You don't have authorization"
             })
         }
-        await db.Venue.destroy({ where: { id: id } })
+        await db.Venue.destroy({ where: { id: req.params.id } })
         return res.status(200).json({
             success: true,
             message: "Delete success!"
