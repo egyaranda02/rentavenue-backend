@@ -22,6 +22,43 @@ const checkVendor = (id, token) => {
     }
 }
 
+module.exports.getWallet = async function (req, res) {
+    try {
+        const token = req.cookies.jwt;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.VendorId != req.params.id) {
+            return res.status(401).json({
+                success: false,
+                message: "You don't have authorization"
+            })
+        }
+        const wallet = await db.Wallet.findOne({
+            where: {
+                VendorId: req.params.id
+            },
+            attributes: ['VendorId', 'balance']
+        })
+        if (!wallet) {
+            const wallet = await db.Wallet.create({
+                VendorId: req.params.id
+            })
+            return res.status(200).json({
+                success: true,
+                data: wallet
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            data: wallet
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
 module.exports.getVendorDetails = async function (req, res) {
     try {
         const vendor = await db.Vendor.findByPk(req.params.id, {

@@ -29,6 +29,7 @@ const upload = multer({
 });
 
 vendorRouter.post('/register', vendorController.register);
+vendorRouter.get('/:id/wallet', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getWallet)
 vendorRouter.get('/:id/venue/verified', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getVenueVerified)
 vendorRouter.get('/:id/venue/notverified', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getVenueNotVerified)
 vendorRouter.get('/:id/transaction/pending', authMiddleware.checkLogin, authMiddleware.checkVendor, vendorController.getVendorTransactionPending)
