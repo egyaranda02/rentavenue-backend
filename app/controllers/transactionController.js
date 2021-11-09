@@ -154,135 +154,69 @@ module.exports.createTransaction = async function (req, res) {
 }
 
 module.exports.MidtransNotification = async function (req, res) {
-    // let apiClient = new midtransClient.Snap({
-    //     isProduction : false,
-    //     serverKey : process.env.MIDTRANS_SERVER_KEY,
-    //     clientKey : process.env.MIDTRANS_CLIENT_KEY
-    // });
-    // const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvxyz', 8);
-    // const checkin_code = nanoid();
-    // apiClient.transaction.notification(req)
-    // .then(async (statusResponse)=>{
-    //     let orderId = statusResponse.order_id;
-    //     let transactionStatus = statusResponse.transaction_status;
-    //     let fraudStatus = statusResponse.fraud_status;
-
-    //     const transaction = db.Transaction.findByPk(orderId);
-
-    //     console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
-
-    // Sample transactionStatus handling logic
-    // if (transactionStatus == 'capture'){
-    //     await db.Checkin_Status.create({
-    //         TransactionId: TransactionId,
-    //         checkin_code: checkin_code
-    //     })
-    //         await transaction.update({
-    //             payment_status: "capture",
-    //             expiredAt: null
-    //         })
-    //         return res.status(200).json({
-    //             success: true,
-    //             message: "Payment received"
-    //         })
-    //     } else if (transactionStatus == 'settlement'){
-    //         await db.Checkin_Status.create({
-    //             TransactionId,
-    //              checkin_code: checkin_code
-    //         })
-    //         await transaction.update({
-    //             payment_status: "settlement",
-    //             expiredAt: null
-    //         })
-    //         return res.status(200).json({
-    //             success: true,
-    //             message: "Payment received"
-    //         })
-    //     } else if (transactionStatus == 'cancel' ||
-    //         transactionStatus == 'deny' ||
-    //         transactionStatus == 'expire'){
-    //             transaction.update({
-    //                 payment_status: "Failed",
-    //                 expiredAt: null
-    //             })
-    //             return res.status(200).json({
-    //                 success: true,
-    //                 message: "Transaction Failed"
-    //             })
-    //     } else if (transactionStatus == 'pending'){
-    //         transaction.update({
-    //             payment_status: "pending"
-    //         })
-    //         return res.status(200).json({
-    //             success: true,
-    //             message: "Payment pending"
-    //         })
-    //     }
-    // });
-
-    let {
-        orderId,
-        transactionStatus,
-        fraudStatus
-    } = req.body
-
-    const transaction = await db.Transaction.findByPk(orderId);
-    const TransactionId = orderId;
-
+    let apiClient = new midtransClient.Snap({
+        isProduction: false,
+        serverKey: process.env.MIDTRANS_SERVER_KEY,
+        clientKey: process.env.MIDTRANS_CLIENT_KEY
+    });
     const nanoid = customAlphabet('1234567890abcdefghijklmnopqrstuvxyz', 8);
     const checkin_code = nanoid();
-    try {
-        if (transactionStatus == 'capture') {
-            await db.Checkin_Status.create({
-                TransactionId: TransactionId,
-                checkin_code: checkin_code
-            })
-            await transaction.update({
-                payment_status: "capture",
-                expiredAt: null
-            })
-            return res.status(200).json({
-                success: true,
-                message: "Payment received"
-            })
-        } else if (transactionStatus == 'settlement') {
-            await db.Checkin_Status.create({
-                TransactionId: TransactionId,
-                checkin_code: checkin_code
-            })
-            await transaction.update({
-                payment_status: "settlement",
-                expiredAt: null
-            })
-            return res.status(200).json({
-                success: true,
-                message: "Payment received"
-            })
-        } else if (transactionStatus == 'cancel' ||
-            transactionStatus == 'deny' ||
-            transactionStatus == 'expire') {
-            await transaction.update({
-                payment_status: "Failed",
-                expiredAt: null
-            })
-            return res.status(200).json({
-                success: true,
-                message: "Transaction Failed"
-            })
-        } else if (transactionStatus == 'pending') {
-            await transaction.update({
-                payment_status: "pending"
-            })
-            return res.status(200).json({
-                success: true,
-                message: "Payment pending"
-            })
-        }
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-    }
+    apiClient.transaction.notification(req)
+        .then(async (statusResponse) => {
+            let orderId = statusResponse.order_id;
+            let transactionStatus = statusResponse.transaction_status;
+            let fraudStatus = statusResponse.fraud_status;
 
+            const transaction = db.Transaction.findByPk(orderId);
+
+            console.log(`Transaction notification received. Order ID: ${orderId}. Transaction status: ${transactionStatus}. Fraud status: ${fraudStatus}`);
+
+            // Sample transactionStatus handling logic
+            if (transactionStatus == 'capture') {
+                await db.Checkin_Status.create({
+                    TransactionId: TransactionId,
+                    checkin_code: checkin_code
+                })
+                await transaction.update({
+                    payment_status: "capture",
+                    expiredAt: null
+                })
+                return res.status(200).json({
+                    success: true,
+                    message: "Payment received"
+                })
+            } else if (transactionStatus == 'settlement') {
+                await db.Checkin_Status.create({
+                    TransactionId: TransactionId,
+                    checkin_code: checkin_code
+                })
+                await transaction.update({
+                    payment_status: "settlement",
+                    expiredAt: null
+                })
+                return res.status(200).json({
+                    success: true,
+                    message: "Payment received"
+                })
+            } else if (transactionStatus == 'cancel' ||
+                transactionStatus == 'deny' ||
+                transactionStatus == 'expire') {
+                await transaction.update({
+                    payment_status: "Failed",
+                    expiredAt: null
+                })
+                return res.status(200).json({
+                    success: true,
+                    message: "Transaction Failed"
+                })
+            } else if (transactionStatus == 'pending') {
+                await transaction.update({
+                    payment_status: "pending"
+                })
+                return res.status(200).json({
+                    success: true,
+                    message: "Payment pending"
+                })
+            }
+        });
 }
