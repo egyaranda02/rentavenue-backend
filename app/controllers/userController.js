@@ -8,6 +8,7 @@ const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const smtpTransportModule = require("nodemailer-smtp-transport");
+const { cloudinary } = require("../config/cloudinary.js");
 
 const tokenAge = 60 * 60;
 
@@ -21,7 +22,8 @@ module.exports.getUserDetail = async function (req, res) {
                 'lastName',
                 'gender',
                 'phone_number',
-                'profile_picture'
+                'profile_picture',
+                'url'
             ]
         })
         if (!user) {
@@ -219,6 +221,14 @@ module.exports.editUser = async function (req, res) {
             message: "User not found!",
         });
     }
+    const token = req.cookies.jwt;
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    if (decoded.UserId != req.params.id) {
+        return res.status(401).json({
+            success: false,
+            message: "You don't have authorization"
+        })
+    }
     const comparePassword = bcrypt.compareSync(password, findUser.password);
     // If password false
     if (!comparePassword) {
@@ -228,12 +238,17 @@ module.exports.editUser = async function (req, res) {
         });
     }
     // See if user changing profile picture
-    let profile_picture;
+    let profile_picture = '';
+    let url = '';
     if (req.file) {
         if (findUser.profile_picture !== 'profile_pict.jpg') {
-            fs.unlinkSync(`./assets/user/profile_picture/${findUser.profile_picture}`);
+            console.log(findUser.profile_picture)
+            await cloudinary.uploader.destroy(findUser.profile_picture, { resource_type: "image" }, function (error, result) {
+                console.log(result, error)
+            });
         }
         profile_picture = req.file.filename;
+        url = req.file.path;
     }
     try {
         await findUser.update({
@@ -242,6 +257,7 @@ module.exports.editUser = async function (req, res) {
             gender: gender,
             phone_number: phone_number,
             profile_picture: profile_picture,
+            url: url
         });
         return res.status(200).json({
             success: true,

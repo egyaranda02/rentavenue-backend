@@ -287,7 +287,8 @@ module.exports.editVendor = async function (req, res) {
         });
     }
     // See if user changing profile picture
-    let profile_picture;
+    let profile_picture = '';
+    let url = '';
     if (req.file) {
         if (findVendor.profile_picture != 'profile_pict.jpg') {
             await cloudinary.uploader.destroy(findVendor.profile_picture);
