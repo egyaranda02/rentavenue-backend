@@ -5,6 +5,16 @@ const path = require('path');
 const vendorRouter = express.Router();
 const authMiddleware = require('../../middleware/authMiddleware');
 const vendorController = require('../../controllers/vendorController');
+const { cloudinary } = require('../../config/cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+const CloudinaryStorages = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'assets/vendor/profile_picture',
+        allowedFormats: ['jpeg', 'jpg', 'png']
+    }
+})
 
 const storage = multer.diskStorage({
     destination: function (req, file, next) {
@@ -24,7 +34,7 @@ const fileFilter = (req, file, next) => {
 };
 
 const upload = multer({
-    storage: storage,
+    storage: CloudinaryStorages,
     fileFilter: fileFilter
 });
 

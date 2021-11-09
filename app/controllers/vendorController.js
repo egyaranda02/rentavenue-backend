@@ -11,6 +11,7 @@ const { sequelize } = require("../models/index.js");
 const smtpTransportModule = require("nodemailer-smtp-transport");
 const { triggerAsyncId } = require("async_hooks");
 const { count } = require("console");
+const { cloudinary } = require("../config/cloudinary.js");
 
 const tokenAge = 60 * 60;
 
@@ -69,7 +70,8 @@ module.exports.getVendorDetails = async function (req, res) {
                 'address',
                 'description',
                 'phone_number',
-                'profile_picture'
+                'profile_picture',
+                'url'
             ]
         })
         if (!vendor) {
@@ -254,8 +256,15 @@ module.exports.editVendor = async function (req, res) {
         phone_number,
         description
     } = req.body;
+    console.log(req.file);
     const findVendor = await db.Vendor.findByPk(req.params.id);
     const token = req.cookies.jwt;
+    if (!findVendor) {
+        return res.status(404).json({
+            success: false,
+            message: "Vendor not found!",
+        });
+    }
     if (checkVendor(findVendor.id, token)) {
         return res.status(401).json({
             success: false,
@@ -267,12 +276,6 @@ module.exports.editVendor = async function (req, res) {
         return res.status(200).json({
             success: false,
             message: "Please enter the password",
-        });
-    }
-    if (!findVendor) {
-        return res.status(404).json({
-            success: false,
-            message: "Vendor not found!",
         });
     }
     // compare password
@@ -287,9 +290,10 @@ module.exports.editVendor = async function (req, res) {
     let profile_picture;
     if (req.file) {
         if (findVendor.profile_picture != 'profile_pict.jpg') {
-            fs.unlinkSync(`./assets/vendor/profile_picture/${findVendor.profile_picture}`);
+            await cloudinary.uploader.destroy(findVendor.profile_picture);
         }
         profile_picture = req.file.filename;
+        url = req.file.path
     }
     try {
         await findVendor.update({
@@ -297,7 +301,8 @@ module.exports.editVendor = async function (req, res) {
             address: address,
             phone_number: phone_number,
             description: description,
-            profile_picture: profile_picture
+            profile_picture: profile_picture,
+            url: url
         });
         return res.status(200).json({
             success: true,

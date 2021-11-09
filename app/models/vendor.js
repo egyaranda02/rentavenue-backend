@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
   Vendor.init({
     email: {
       type: DataTypes.STRING,
-      allowNull:false,
+      allowNull: false,
       unique: true,
       validate: {
         isEmail: true,
@@ -27,38 +27,38 @@ module.exports = (sequelize, DataTypes) => {
     },
     password: {
       type: DataTypes.STRING,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         len: [6],
         notEmpty: true
       }
     },
     vendor_name: {
       type: DataTypes.STRING,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
     address: {
       type: DataTypes.TEXT,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
     phone_number: {
       type: DataTypes.STRING,
-      allowNull:false,
+      allowNull: false,
       validate: {
-        isNumeric:true,
+        isNumeric: true,
         notEmpty: true
       }
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull:false,
-      validate:{
+      allowNull: false,
+      validate: {
         notEmpty: true
       }
     },
@@ -69,15 +69,19 @@ module.exports = (sequelize, DataTypes) => {
     is_verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },
+    url: {
+      type: DataTypes.STRING,
+      defaultValue: "https://i.stack.imgur.com/34AD2.jpg"
     }
   }, {
-    hooks:{
-      beforeCreate: async (vendor, options)=>{
+    hooks: {
+      beforeCreate: async (vendor, options) => {
         const salt = await bcrypt.genSalt();
         const encryptedPassword = await bcrypt.hash(vendor.password, salt);
         vendor.password = encryptedPassword;
       },
-      beforeValidate: (vendor, options)=>{
+      beforeValidate: (vendor, options) => {
         vendor.email = vendor.email.toLowerCase();
       }
     },
