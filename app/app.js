@@ -9,7 +9,6 @@ const cron = require('node-cron');
 const app = express()
 
 const apiRoutes = require("./routes/index");
-const port = 5000
 
 const transactionExpiration = cron.schedule('* * * * *', async () => {
     console.log('Checking Transactions Expiration');
@@ -106,4 +105,4 @@ app.get('/', (req, res) => res.send('Hello World!'))
 app.use("/api", apiRoutes);
 transactionExpiration.start();
 autoCheckout.start();
-app.listen(port, () => console.log(`This App is Running on port ` + port))
+app.listen(process.env.PORT || 5000, () => console.log(`This App is Running on port ` + port))
