@@ -4,7 +4,9 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const moment = require('moment');
 const { sequelize } = require("../models/index.js");
+const { url } = require("inspector");
 require("dotenv").config({ path: "./.env" });
+const { cloudinary } = require("../config/cloudinary.js");
 
 
 module.exports.getAll = async function (req, res) {
@@ -240,15 +242,17 @@ module.exports.Create = async function (req, res) {
         const VenueId = venue.id;
         let filename
         let type
-
+        let url
         // Upload KTP
         try {
             type = 'ktp'
             filename = req.files['ktp'][0].filename;
+            url = req.files['ktp'][0].path;
             await db.Document.create({
                 VenueId,
                 filename,
-                type
+                type,
+                url
             })
         } catch (error) {
             return res.status(400).json({
@@ -261,10 +265,12 @@ module.exports.Create = async function (req, res) {
         try {
             type = 'surat_tanah'
             filename = req.files['surat_tanah'][0].filename;
+            url = req.files['surat_tanah'][0].path;
             await db.Document.create({
                 VenueId,
                 filename,
-                type
+                type,
+                url
             })
         } catch (error) {
             return res.status(400).json({
@@ -275,10 +281,12 @@ module.exports.Create = async function (req, res) {
 
         req.files['venue_photos'].forEach(async function (file) {
             filename = file.filename;
+            url = file.path;
             try {
                 await db.Venue_Photo.create({
                     VenueId,
-                    filename
+                    filename,
+                    url
                 })
             } catch (error) {
                 return res.status(400).json({
@@ -320,7 +328,9 @@ module.exports.EditVenue = async function (req, res) {
             if (req.files['venue_photos']) {
                 req.files['venue_photos'].forEach(async function (file) {
                     filename = file.filename;
-                    fs.unlinkSync(`./assets/venue/venue_photos/${filename}`)
+                    await cloudinary.uploader.destroy(filename, { resource_type: "image" }, function (error, result) {
+                        console.log(result, error)
+                    });
                 })
             }
             return res.status(404).json({
@@ -340,10 +350,12 @@ module.exports.EditVenue = async function (req, res) {
             }
             req.files['venue_photos'].forEach(async function (file) {
                 filename = file.filename;
+                url = req.file.path;
                 try {
                     await db.Venue_Photo.create({
                         VenueId,
-                        filename
+                        filename,
+                        url
                     })
                 } catch (error) {
                     console.log(error)
@@ -375,6 +387,12 @@ module.exports.EditVenue = async function (req, res) {
 module.exports.deleteVenuePhotos = async function (req, res) {
     try {
         const venuePhotos = await db.Venue_Photo.findByPk(req.params.photoId)
+        if (!venuePhotos) {
+            return res.status(200).json({
+                success: false,
+                message: "Photo not found"
+            })
+        }
         const venue = await db.Venue.findByPk(venuePhotos.VenueId);
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
@@ -385,6 +403,9 @@ module.exports.deleteVenuePhotos = async function (req, res) {
             })
         }
         await db.Venue_Photo.destroy({ where: { id: req.params.photoId } })
+        await cloudinary.uploader.destroy(venuePhotos.filename, { resource_type: "image" }, function (error, result) {
+            console.log(result, error)
+        });
         return res.status(200).json({
             success: true,
             message: "Delete success!"

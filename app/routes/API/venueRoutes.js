@@ -6,6 +6,24 @@ const venueRouter = express.Router();
 const authMiddleware = require('../../middleware/authMiddleware');
 const venueController = require('../../controllers/venueController');
 const feedbackController = require('../../controllers/feedbackController');
+const { cloudinary } = require('../../config/cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+const CloudinaryStorages = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: (req, file) => {
+            let subFolder = ''
+            if (file.fieldname === 'venue_photos') {
+                subFolder = 'assets/venue/venue_photos'
+            } else {
+                subFolder = 'assets/venue/documents'
+            }
+            return subFolder
+        },
+        allowedFormats: ['jpeg', 'jpg', 'png']
+    }
+})
 
 const storage = multer.diskStorage({
     destination: function (req, file, next) {
@@ -29,7 +47,7 @@ const fileFilter = (req, file, next) => {
 };
 
 const upload = multer({
-    storage: storage,
+    storage: CloudinaryStorages,
     fileFilter: fileFilter
 });
 

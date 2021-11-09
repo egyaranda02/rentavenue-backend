@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.STRING
     },
+    url: {
+      allowNull: false,
+      type: DataTypes.STRING,
+    }
   }, {
     sequelize,
     modelName: 'Document',

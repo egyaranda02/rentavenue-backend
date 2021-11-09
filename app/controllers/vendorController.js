@@ -291,7 +291,9 @@ module.exports.editVendor = async function (req, res) {
     let url = '';
     if (req.file) {
         if (findVendor.profile_picture != 'profile_pict.jpg') {
-            await cloudinary.uploader.destroy(findVendor.profile_picture);
+            await cloudinary.uploader.destroy(findVendor.profile_picture, { resource_type: "image" }, function (error, result) {
+                console.log(result, error)
+            });
         }
         profile_picture = req.file.filename;
         url = req.file.path
