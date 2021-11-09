@@ -423,6 +423,16 @@ module.exports.deleteVenue = async function (req, res) {
         const token = req.cookies.jwt;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
         const venue = await db.Venue.findByPk(req.params.id);
+        const venuePhotos = await db.Venue_Photo.findAll({
+            where: {
+                VenueId: venue.id
+            }
+        })
+        const documents = await db.Document.findAll({
+            where: {
+                VenueId: venue.id
+            }
+        })
         if (decoded.VendorId != venue.VendorId) {
             return res.status(401).json({
                 success: false,
@@ -430,6 +440,16 @@ module.exports.deleteVenue = async function (req, res) {
             })
         }
         await db.Venue.destroy({ where: { id: req.params.id } })
+        venuePhotos.forEach(async function (photo) {
+            await cloudinary.uploader.destroy(photo.filename, { resource_type: "image" }, function (error, result) {
+                console.log(result, error)
+            });
+        })
+        documents.forEach(async function (document) {
+            await cloudinary.uploader.destroy(document.filename, { resource_type: "image" }, function (error, result) {
+                console.log(result, error)
+            });
+        })
         return res.status(200).json({
             success: true,
             message: "Delete success!"
